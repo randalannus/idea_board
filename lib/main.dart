@@ -17,9 +17,7 @@ class MyApp extends StatelessWidget {
       create: (_) => IdeasProvider(),
       child: MaterialApp(
         title: 'Idea Board',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+        theme: ThemeData(primarySwatch: Colors.blue, canvasColor: Colors.white),
         home: const MyHomePage(),
       ),
     );
@@ -73,12 +71,6 @@ Widget pageContent(int pageIndex) {
 
 void _fabPressed(BuildContext context) {
   int id = Provider.of<IdeasProvider>(context, listen: false).newIdea().id;
-  Navigator.push(context, MaterialPageRoute<void>(builder: (context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("New Idea"),
-      ),
-      body: Center(child: WritePage(id)),
-    );
-  }));
+  Navigator.push(
+      context, MaterialPageRoute<void>(builder: (context) => WritePage(id)));
 }

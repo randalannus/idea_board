@@ -4,6 +4,10 @@ class IdeasProvider with ChangeNotifier {
   late final List<Idea> _ideas = [];
   List<Idea> get ideas => _ideas;
 
+  Idea getIdea(int id) {
+    return ideas.firstWhere((element) => element.id == id);
+  }
+
   Idea newIdea() {
     final idea = Idea(ideas.length, "");
     ideas.add(idea);

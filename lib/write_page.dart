@@ -10,21 +10,32 @@ class WritePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.expand(
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-        child: EditableText(
-          controller: _controller,
-          onChanged: (text) => onTextChanged(context, text),
-          focusNode: FocusNode(),
-          style: const TextStyle(
-            fontSize: 18,
-            color: Colors.black,
-          ),
-          cursorColor: Colors.black,
-          backgroundCursorColor: Colors.black,
-        ),
+    _controller.text =
+        Provider.of<IdeasProvider>(context, listen: false).getIdea(ideaId).text;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("New Idea"),
       ),
+      body: Center(
+          child: SizedBox.expand(
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          child: TextField(
+            autofocus: true,
+            maxLines: null,
+            expands: true,
+            controller: _controller,
+            onChanged: (text) => onTextChanged(context, text),
+            focusNode: FocusNode(),
+            style: const TextStyle(
+              fontSize: 18,
+              color: Colors.black,
+            ),
+            decoration: const InputDecoration(border: InputBorder.none),
+            cursorColor: Colors.black,
+          ),
+        ),
+      )),
     );
   }
 
