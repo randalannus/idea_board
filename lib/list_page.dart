@@ -10,8 +10,15 @@ class ListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<IdeasProvider>(builder: (context, ideasProvider, _) {
       return SizedBox.expand(
-          child:
-              ListView(children: ideasToCards(context, ideasProvider.ideas)));
+          child: FutureBuilder<List<Idea>>(
+              future: ideasProvider.listIdeas(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return ListView(
+                    children: ideasToCards(context, snapshot.data!));
+              }));
     });
   }
 }

@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:idea_board/db_handler.dart';
 import 'package:idea_board/ideas.dart';
 import 'package:idea_board/list_page.dart';
 import 'package:idea_board/write_page.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite/sqflite.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DBHandler.initializeDB();
   runApp(const MyApp());
 }
 
@@ -70,7 +75,21 @@ Widget pageContent(int pageIndex) {
 }
 
 void _fabPressed(BuildContext context) {
-  int id = Provider.of<IdeasProvider>(context, listen: false).newIdea().id;
-  Navigator.push(
-      context, MaterialPageRoute<void>(builder: (context) => WritePage(id)));
+  final provider = Provider.of<IdeasProvider>(context, listen: false);
+  provider.newIdea().then((idea) {
+    Navigator.push(context,
+        MaterialPageRoute<void>(builder: (context) => WritePage(idea.id)));
+  });
+}
+
+Future<Database> createDatabase() async {
+  return openDatabase(
+    join(await getDatabasesPath(), 'idea_database.db'),
+    onCreate: (db, version) {
+      return db.execute(
+        'CREATE TABLE ideas(id INTEGER PRIMARY KEY, text TEXT)',
+      );
+    },
+    version: 1,
+  );
 }

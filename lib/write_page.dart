@@ -10,8 +10,9 @@ class WritePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _controller.text =
-        Provider.of<IdeasProvider>(context, listen: false).getIdea(ideaId).text;
+    Provider.of<IdeasProvider>(context, listen: false)
+        .getIdea(ideaId)
+        .then((idea) => _controller.text = idea.text);
     return Scaffold(
       appBar: AppBar(
         title: const Text("New Idea"),
@@ -25,7 +26,7 @@ class WritePage extends StatelessWidget {
             maxLines: null,
             expands: true,
             controller: _controller,
-            onChanged: (text) => onTextChanged(context, text),
+            onChanged: (text) async => await onTextChanged(context, text),
             focusNode: FocusNode(),
             style: const TextStyle(
               fontSize: 18,
@@ -39,7 +40,8 @@ class WritePage extends StatelessWidget {
     );
   }
 
-  void onTextChanged(BuildContext context, String text) {
-    Provider.of<IdeasProvider>(context, listen: false).edit(ideaId, text);
+  Future onTextChanged(BuildContext context, String text) async {
+    await Provider.of<IdeasProvider>(context, listen: false)
+        .edit(Idea(ideaId, text));
   }
 }
