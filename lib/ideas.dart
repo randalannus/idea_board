@@ -36,7 +36,7 @@ class IdeasProvider with ChangeNotifier {
 
   Future<List<Idea>> listIdeas() async {
     final db = await DBHandler.initializeDB();
-    final maps = await db.query(DBHandler.ideasTable);
+    final maps = await db.query(DBHandler.ideasTable, orderBy: "createdAt ASC");
     return mapsToIdeas(maps);
   }
 

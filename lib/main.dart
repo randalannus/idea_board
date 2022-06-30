@@ -81,15 +81,3 @@ void _fabPressed(BuildContext context) {
         MaterialPageRoute<void>(builder: (context) => WritePage(idea.id)));
   });
 }
-
-Future<Database> createDatabase() async {
-  return openDatabase(
-    join(await getDatabasesPath(), 'idea_database.db'),
-    onCreate: (db, version) {
-      return db.execute(
-        'CREATE TABLE ideas(id INTEGER PRIMARY KEY, text TEXT)',
-      );
-    },
-    version: 1,
-  );
-}
