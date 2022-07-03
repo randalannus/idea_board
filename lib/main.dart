@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:idea_board/db_handler.dart';
+import 'package:idea_board/feed_page.dart';
 import 'package:idea_board/ideas.dart';
 import 'package:idea_board/list_page.dart';
 import 'package:idea_board/themes.dart';
@@ -73,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 Widget pageContent(int pageIndex) {
-  if (pageIndex == 0) return const ListPage();
+  if (pageIndex == 0) return const FeedPage();
   if (pageIndex == 1) return const ListPage();
   throw "Invalid page index";
 }
