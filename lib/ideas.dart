@@ -40,6 +40,13 @@ class IdeasProvider with ChangeNotifier {
     return mapsToIdeas(maps);
   }
 
+  Future<Idea> selectRandom() async {
+    final db = await DBHandler.initializeDB();
+    final maps = await db.rawQuery(
+        "SELECT * FROM ${DBHandler.ideasTable} ORDER BY RANDOM() LIMIT 1;");
+    return Idea.fromMap(maps[0]);
+  }
+
   List<Idea> mapsToIdeas(List<Map<String, dynamic>> maps) {
     return maps.map<Idea>(Idea.fromMap).toList();
   }
