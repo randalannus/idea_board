@@ -10,10 +10,12 @@ class Themes {
       primarySwatch: primaryColor,
       canvasColor: canvasColor,
       backgroundColor: backgroundColor,
-      bottomAppBarTheme: BottomAppBarTheme(color: canvasColor, elevation: 2),
+      bottomAppBarTheme: BottomAppBarTheme(color: canvasColor, elevation: 0),
       appBarTheme: AppBarTheme(
           titleTextStyle: GoogleFonts.varelaRound(
-              fontSize: 24, fontWeight: FontWeight.w500)),
+              fontSize: 24, fontWeight: FontWeight.w500, color: primaryColor),
+          color: canvasColor,
+          elevation: 0),
       iconTheme: IconThemeData(color: primaryColor),
       textTheme: Typography.blackHelsinki.copyWith(
           bodyText2:

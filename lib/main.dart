@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const SafeArea(left: true, top: false, child: Text("Ideas")),
+          title: const Text("Ideas"),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _fabPressed(context),
