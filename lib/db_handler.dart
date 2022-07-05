@@ -7,7 +7,7 @@ class DBHandler {
 
   static Future<Database> initializeDB() async {
     String path = await getDatabasesPath();
-    return openDatabase(join(path, dbName), version: 3,
+    return openDatabase(join(path, dbName), version: 4,
         onCreate: (db, version) async {
       _createTables(db);
     }, onUpgrade: (db, old_version, new_version) async {
@@ -18,7 +18,12 @@ class DBHandler {
 
   static Future _createTables(Database db) {
     return db.execute(
-      "CREATE TABLE $ideasTable(id INTEGER PRIMARY KEY, text TEXT NOT NULL, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP);",
+      """CREATE TABLE $ideasTable(
+				id INTEGER PRIMARY KEY,
+				text TEXT NOT NULL,
+				createdAt INTEGER NOT NULL,
+				isArchived INTEGER NOT NULL
+			);""",
     );
   }
 

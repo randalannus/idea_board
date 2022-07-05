@@ -13,7 +13,12 @@ class IdeasProvider with ChangeNotifier {
 
   Future<Idea> newIdea() async {
     final db = await DBHandler.initializeDB();
-    final idea = Idea(const Uuid().v4().hashCode, "");
+    final idea = Idea(
+        id: const Uuid().v4().hashCode,
+        text: "",
+        createdAt: DateTime.now(),
+        isArchived: false);
+
     await db.insert(
       DBHandler.ideasTable,
       idea.toMap(),
@@ -23,20 +28,40 @@ class IdeasProvider with ChangeNotifier {
     return idea;
   }
 
-  Future edit(Idea idea) async {
+  Future<void> editText(int id, String text) async {
     final db = await DBHandler.initializeDB();
+    final Map<String, Object?> map = {"id": id, "text": text};
     await db.update(
       DBHandler.ideasTable,
-      idea.toMap(),
+      map,
       where: 'id = ?',
-      whereArgs: [idea.id],
+      whereArgs: [id],
     );
     notifyListeners();
   }
 
-  Future<List<Idea>> listIdeas() async {
+  Future<void> archive(int id) async {
     final db = await DBHandler.initializeDB();
-    final maps = await db.query(DBHandler.ideasTable, orderBy: "createdAt ASC");
+    final Map<String, Object?> map = {"id": id, "isArchived": 1};
+    await db.update(
+      DBHandler.ideasTable,
+      map,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    notifyListeners();
+  }
+
+  Future<List<Idea>> listIdeas({bool includeArchived = false}) async {
+    final db = await DBHandler.initializeDB();
+    String? where;
+    List<Object?>? whereArgs;
+    if (!includeArchived) {
+      where = "isArchived = ?";
+      whereArgs = [0];
+    }
+    final maps = await db.query(DBHandler.ideasTable,
+        orderBy: "createdAt ASC", where: where, whereArgs: whereArgs);
     return mapsToIdeas(maps);
   }
 
@@ -55,13 +80,26 @@ class IdeasProvider with ChangeNotifier {
 class Idea {
   final int id;
   final String text;
+  final DateTime createdAt;
+  final bool isArchived;
 
-  const Idea(this.id, this.text);
+  const Idea(
+      {required this.id,
+      required this.text,
+      required this.createdAt,
+      required this.isArchived});
   Idea.fromMap(Map<String, dynamic> res)
       : id = res["id"],
-        text = res["text"];
+        text = res["text"],
+        isArchived = res["isArchived"] == 1,
+        createdAt = DateTime.fromMillisecondsSinceEpoch(res["createdAt"]);
 
   Map<String, Object?> toMap() {
-    return {'id': id, 'text': text};
+    return {
+      "id": id,
+      "text": text,
+      "createdAt": createdAt.millisecondsSinceEpoch,
+      "isArchived": isArchived ? 1 : 0
+    };
   }
 }
