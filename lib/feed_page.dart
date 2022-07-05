@@ -19,6 +19,10 @@ class FeedPage extends StatelessWidget {
               return const SizedBox();
             }
             final ideas = snapshot.data!;
+            if (ideas.isEmpty) {
+              return const Center(child: Text("Press + to create an idea"));
+            }
+
             return Scroller(ideas: ideas);
           }),
     );
@@ -47,19 +51,36 @@ class _ScrollerState extends State<Scroller> {
     return TikTokStyleFullPageScroller(
         contentSize: intMaxValue,
         builder: (context, index) {
-          Idea idea = indexToId.containsKey(index)
+          Idea? idea = indexToId.containsKey(index)
               ? findIdea(indexToId[index]!)
               : selectRandomIdea();
+          if (idea == null) {
+            return const Center(
+              child: Text("Press + to create an idea"),
+            );
+          }
           indexToId[index] = idea.id;
           return IdeaCard(idea: idea);
         });
   }
 
-  Idea findIdea(int id) {
-    return widget.ideas.firstWhere((idea) => idea.id == id);
+  /// Finds the idea with the specified id.
+  /// If there is no idea with the specified id, then null is returned.
+  Idea? findIdea(int id) {
+    try {
+      return widget.ideas.firstWhere((idea) => idea.id == id);
+    } on StateError {
+      return null;
+    }
   }
 
-  Idea selectRandomIdea() {
-    return widget.ideas[rng.nextInt(widget.ideas.length)];
+  /// Selects a random idea.
+  /// Id the list of ideas is empty, then null is returned.
+  Idea? selectRandomIdea() {
+    try {
+      return widget.ideas[rng.nextInt(widget.ideas.length)];
+    } on RangeError {
+      return null;
+    }
   }
 }

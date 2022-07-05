@@ -16,8 +16,13 @@ class ListPage extends StatelessWidget {
                 if (!snapshot.hasData) {
                   return const SizedBox.shrink();
                 }
-                return ListView(
-                    children: ideasToCards(context, snapshot.data!));
+                List<Idea> ideas = snapshot.data!;
+                if (ideas.isEmpty) {
+                  return const Center(
+                    child: Text("Press + to create an idea"),
+                  );
+                }
+                return ListView(children: ideasToCards(context, ideas));
               }));
     });
   }
