@@ -15,7 +15,8 @@ class WritePage extends StatelessWidget {
         .then((idea) => _controller.text = idea.text);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("New Idea"),
+        title: const Text("Edit Idea"),
+        iconTheme: Theme.of(context).iconTheme,
       ),
       body: Center(
           child: SizedBox.expand(
