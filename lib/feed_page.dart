@@ -13,7 +13,7 @@ class FeedPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<IdeasProvider>(
       builder: (context, provider, _) => FutureBuilder<List<Idea>>(
-          future: provider.listIdeas(),
+          future: provider.listIdeas(includeArchived: true),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const SizedBox();
@@ -30,12 +30,15 @@ class FeedPage extends StatelessWidget {
 }
 
 class Scroller extends StatefulWidget {
-  const Scroller({
+  Scroller({
     Key? key,
     required this.ideas,
-  }) : super(key: key);
+  }) : super(key: key) {
+    unarchivedIdeas = ideas.where((idea) => !idea.isArchived).toList();
+  }
 
   final List<Idea> ideas;
+  late final List<Idea> unarchivedIdeas;
 
   @override
   State<Scroller> createState() => _ScrollerState();
@@ -43,23 +46,28 @@ class Scroller extends StatefulWidget {
 
 class _ScrollerState extends State<Scroller> {
   static const intMaxValue = 9007199254740991;
-  final Map<int, int> indexToId = {};
+  final List<int> historicIds = [];
   final Random rng = Random();
+  final Controller controller = Controller();
 
   @override
   Widget build(BuildContext context) {
     return TikTokStyleFullPageScroller(
         contentSize: intMaxValue,
         builder: (context, index) {
-          Idea? idea = indexToId.containsKey(index)
-              ? findIdea(indexToId[index]!)
+          Idea? idea = historicIds.length > index
+              ? findIdea(historicIds[index])
               : selectRandomIdea();
           if (idea == null) {
             return const Center(
               child: Text("Press + to create an idea"),
             );
           }
-          indexToId[index] = idea.id;
+          if (historicIds.length > index) {
+            historicIds[index] = idea.id;
+          } else {
+            historicIds.add(idea.id);
+          }
           return IdeaCard(idea: idea);
         });
   }
@@ -78,7 +86,7 @@ class _ScrollerState extends State<Scroller> {
   /// Id the list of ideas is empty, then null is returned.
   Idea? selectRandomIdea() {
     try {
-      return widget.ideas[rng.nextInt(widget.ideas.length)];
+      return widget.unarchivedIdeas[rng.nextInt(widget.unarchivedIdeas.length)];
     } on RangeError {
       return null;
     }

@@ -17,6 +17,11 @@ class WritePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Edit Idea"),
         iconTheme: Theme.of(context).iconTheme,
+        actions: [
+          IconButton(
+              onPressed: () => _onArchivePressed(context),
+              icon: const Icon(Icons.delete))
+        ],
       ),
       body: Center(
           child: SizedBox.expand(
@@ -27,7 +32,7 @@ class WritePage extends StatelessWidget {
             maxLines: null,
             expands: true,
             controller: _controller,
-            onChanged: (text) async => await onTextChanged(context, text),
+            onChanged: (text) async => await _onTextChanged(context, text),
             focusNode: FocusNode(),
             style: const TextStyle(
               fontSize: 18,
@@ -41,8 +46,14 @@ class WritePage extends StatelessWidget {
     );
   }
 
-  Future onTextChanged(BuildContext context, String text) async {
+  Future<void> _onTextChanged(BuildContext context, String text) async {
     await Provider.of<IdeasProvider>(context, listen: false)
-        .edit(Idea(ideaId, text));
+        .editText(ideaId, text);
+  }
+
+  void _onArchivePressed(BuildContext context) {
+    Provider.of<IdeasProvider>(context, listen: false)
+        .archive(ideaId)
+        .then((_) => Navigator.of(context).pop());
   }
 }
