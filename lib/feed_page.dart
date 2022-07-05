@@ -48,7 +48,6 @@ class _ScrollerState extends State<Scroller> {
   static const intMaxValue = 9007199254740991;
   final List<int> historicIds = [];
   final Random rng = Random();
-  final Controller controller = Controller();
 
   @override
   Widget build(BuildContext context) {

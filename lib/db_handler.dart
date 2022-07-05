@@ -11,8 +11,11 @@ class DBHandler {
         onCreate: (db, version) async {
       _createTables(db);
     }, onUpgrade: (db, old_version, new_version) async {
-      _dropTables(db);
-      _createTables(db);
+      if (old_version <= 3) {
+        _dropTables(db);
+        _createTables(db);
+        return;
+      }
     });
   }
 
