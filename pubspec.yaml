@@ -33,12 +33,18 @@ dependencies:
   uuid: ^3.0.6
   google_fonts: ^3.0.1
   tiktoklikescroller: ^0.2.3
+  flutter_launcher_icons: ^0.9.3
   flutter:
     sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
+
+flutter_icons:
+  image_path: "assets/icon.png"
+  android: true
+  ios: true
 
 dev_dependencies:
   flutter_test:
