@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:idea_board/ideas.dart';
 import 'package:idea_board/write_page.dart';
@@ -13,8 +14,16 @@ class IdeaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-        child: InkWell(
-      onTap: () => onTap(context, idea.id),
+      child: OpenContainer(
+        closedBuilder: closedBuilder,
+        openBuilder: openBuilder,
+      ),
+    );
+  }
+
+  Widget closedBuilder(BuildContext context, VoidCallback openContainer) {
+    return InkWell(
+      onTap: openContainer,
       child: Padding(
         padding: padding,
         child: ConstrainedBox(
@@ -26,11 +35,10 @@ class IdeaCard extends StatelessWidget {
           ),
         ),
       ),
-    ));
+    );
   }
 
-  void onTap(BuildContext context, int ideaId) {
-    Navigator.push(context,
-        MaterialPageRoute<void>(builder: (context) => WritePage(ideaId)));
+  Widget openBuilder(BuildContext context, VoidCallback openContainer) {
+    return WritePage(idea.id);
   }
 }
