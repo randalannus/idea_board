@@ -16,11 +16,9 @@ class WritePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (initialText == null) {
-      Provider.of<IdeasProvider>(context, listen: false)
-          .getIdea(ideaId)
-          .then((idea) => _controller.text = idea.text);
-    }
+    Provider.of<IdeasProvider>(context, listen: false)
+        .getIdea(ideaId)
+        .then((idea) => _controller.text = idea.text);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Edit Idea"),
