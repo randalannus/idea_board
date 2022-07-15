@@ -82,7 +82,9 @@ Widget pageContent(int pageIndex) {
 void _fabPressed(BuildContext context) {
   final provider = Provider.of<IdeasProvider>(context, listen: false);
   provider.newIdea().then((idea) {
-    Navigator.push(context,
-        MaterialPageRoute<void>(builder: (context) => WritePage(idea.id)));
+    Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+            builder: (context) => WritePage(ideaId: idea.id)));
   });
 }

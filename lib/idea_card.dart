@@ -39,6 +39,6 @@ class IdeaCard extends StatelessWidget {
   }
 
   Widget openBuilder(BuildContext context, VoidCallback openContainer) {
-    return WritePage(idea.id);
+    return WritePage(ideaId: idea.id, initialText: idea.text);
   }
 }

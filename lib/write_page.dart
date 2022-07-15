@@ -5,14 +5,22 @@ import 'package:provider/provider.dart';
 class WritePage extends StatelessWidget {
   final _controller = TextEditingController();
   final int ideaId;
+  final String? initialText;
 
-  WritePage(this.ideaId, {Key? key}) : super(key: key);
+  WritePage({required this.ideaId, this.initialText, Key? key})
+      : super(key: key) {
+    if (initialText != null) {
+      _controller.text = initialText!;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<IdeasProvider>(context, listen: false)
-        .getIdea(ideaId)
-        .then((idea) => _controller.text = idea.text);
+    if (initialText == null) {
+      Provider.of<IdeasProvider>(context, listen: false)
+          .getIdea(ideaId)
+          .then((idea) => _controller.text = idea.text);
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text("Edit Idea"),
