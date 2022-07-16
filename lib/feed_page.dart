@@ -67,7 +67,10 @@ class _ScrollerState extends State<Scroller> {
           } else {
             historicIds.add(idea.id);
           }
-          return IdeaCard(idea: idea);
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: IdeaCard(idea: idea),
+          );
         });
   }
 

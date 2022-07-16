@@ -22,16 +22,25 @@ class ListPage extends StatelessWidget {
                     child: Text("Press + to create an idea"),
                   );
                 }
-                return ListView(children: ideasToCards(context, ideas));
+                return ideasListView(ideas);
               }));
     });
   }
-}
 
-List<Widget> ideasToCards(BuildContext context, List<Idea> ideas) {
-  final cards = <Widget>[];
-  for (var idea in ideas) {
-    cards.insert(0, IdeaCard(idea: idea));
+  Widget ideasListView(List<Idea> ideas) {
+    const double sepHeight = 8;
+    return ListView.separated(
+      itemCount: ideas.length + 2, // Add separators to the beginning and end
+      itemBuilder: (context, index) {
+        if (index == 0 || index == ideas.length + 1) {
+          return const SizedBox();
+        }
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: IdeaCard(idea: ideas[index - 1]),
+        );
+      },
+      separatorBuilder: (context, index) => const SizedBox(height: sepHeight),
+    );
   }
-  return cards;
 }

@@ -13,11 +13,14 @@ class IdeaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: OpenContainer(
-        closedBuilder: closedBuilder,
-        openBuilder: openBuilder,
+    return OpenContainer(
+      closedShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
       ),
+      closedElevation: 0,
+      closedColor: Theme.of(context).cardColor,
+      closedBuilder: closedBuilder,
+      openBuilder: openBuilder,
     );
   }
 

@@ -24,6 +24,7 @@ class WritePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Edit Idea"),
+        backgroundColor: Theme.of(context).cardColor,
         iconTheme: Theme.of(context).iconTheme,
         actions: [
           IconButton(
@@ -34,17 +35,15 @@ class WritePage extends StatelessWidget {
       body: Center(
           child: SizedBox.expand(
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          color: Theme.of(context).cardColor,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
           child: TextField(
             maxLines: null,
             expands: true,
             controller: _controller,
             onChanged: (text) async => await _onTextChanged(context, text),
             focusNode: FocusNode(),
-            style: const TextStyle(
-              fontSize: 18,
-              color: Colors.black,
-            ),
+            style: Theme.of(context).textTheme.bodyText1,
             decoration: const InputDecoration(border: InputBorder.none),
             cursorColor: Colors.black,
           ),
