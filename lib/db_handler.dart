@@ -10,8 +10,8 @@ class DBHandler {
     return openDatabase(join(path, dbName), version: 4,
         onCreate: (db, version) async {
       _createTables(db);
-    }, onUpgrade: (db, old_version, new_version) async {
-      if (old_version <= 3) {
+    }, onUpgrade: (db, oldVersion, newVersion) async {
+      if (oldVersion <= 3) {
         _dropTables(db);
         _createTables(db);
         return;
