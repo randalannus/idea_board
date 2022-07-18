@@ -54,19 +54,19 @@ class _ScrollerState extends State<Scroller> {
     return TikTokStyleFullPageScroller(
         contentSize: intMaxValue,
         builder: (context, index) {
-          Idea? idea = historicIds.length > index
-              ? findIdea(historicIds[index])
-              : selectRandomIdea();
-          if (idea == null) {
-            return const Center(
-              child: Text("Press + to create an idea"),
-            );
-          }
+          Idea? idea;
           if (historicIds.length > index) {
+            idea = findIdea(historicIds[index]);
             historicIds[index] = idea.id;
           } else {
+            int lastIndex = lastRecommendationIndex();
+            ;
+            idea = recommendIdea(lastIndex);
             historicIds.add(idea.id);
+            Provider.of<IdeasProvider>(context)
+                .setLastRecommended(idea.id, lastIndex + 1);
           }
+
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: IdeaCard(idea: idea),
@@ -75,22 +75,50 @@ class _ScrollerState extends State<Scroller> {
   }
 
   /// Finds the idea with the specified id.
-  /// If there is no idea with the specified id, then null is returned.
-  Idea? findIdea(int id) {
-    try {
-      return widget.ideas.firstWhere((idea) => idea.id == id);
-    } on StateError {
-      return null;
-    }
+  Idea findIdea(int id) {
+    return widget.ideas.firstWhere((idea) => idea.id == id);
   }
 
   /// Selects a random idea.
-  /// Id the list of ideas is empty, then null is returned.
-  Idea? selectRandomIdea() {
-    try {
-      return widget.unarchivedIdeas[rng.nextInt(widget.unarchivedIdeas.length)];
-    } on RangeError {
-      return null;
+  Idea selectRandomIdea() {
+    final ideas = widget.unarchivedIdeas;
+    return ideas[rng.nextInt(ideas.length)];
+  }
+
+  Idea randomChoice(List<Idea> ideas, List<int> weights) {
+    int sum = weights.fold(0, (prevValue, weight) => prevValue + weight);
+    int randomValue = rng.nextInt(sum) + 1;
+    int sum2 = 0;
+    for (var i = 0; i < ideas.length; i++) {
+      sum2 += weights[i];
+      if (randomValue <= sum2) {
+        return ideas[i];
+      }
     }
+    return ideas.last;
+  }
+
+  int lastRecommendationIndex() {
+    return widget.unarchivedIdeas.fold(
+        -1, (prevValue, idea) => max(prevValue, idea.lastRecommended ?? -1));
+  }
+
+  Idea recommendIdea(int lastIndex) {
+    final ideas = widget.unarchivedIdeas;
+    final weights = calcWeights(ideas, lastIndex);
+    return randomChoice(ideas, weights);
+  }
+
+  List<int> calcWeights(List<Idea> ideas, int lastIndex) {
+    int maxWeight = ideas.length * 2;
+    List<int> weights = [];
+    for (var idea in ideas) {
+      if (idea.lastRecommended == null) {
+        weights.add(maxWeight);
+      } else {
+        weights.add(min(lastIndex - idea.lastRecommended!, maxWeight));
+      }
+    }
+    return weights;
   }
 }

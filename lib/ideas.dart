@@ -14,10 +14,12 @@ class IdeasProvider with ChangeNotifier {
   Future<Idea> newIdea() async {
     final db = await DBHandler.initializeDB();
     final idea = Idea(
-        id: const Uuid().v4().hashCode,
-        text: "",
-        createdAt: DateTime.now(),
-        isArchived: false);
+      id: const Uuid().v4().hashCode,
+      text: "",
+      createdAt: DateTime.now(),
+      isArchived: false,
+      lastRecommended: null,
+    );
 
     await db.insert(
       DBHandler.ideasTable,
@@ -72,6 +74,16 @@ class IdeasProvider with ChangeNotifier {
     return Idea.fromMap(maps[0]);
   }
 
+  Future<void> setLastRecommended(int ideaId, int lastRecommended) async {
+    final db = await DBHandler.initializeDB();
+    await db.rawUpdate("""
+			UPDATE ${DBHandler.ideasTable}
+			SET lastRecommended = $lastRecommended
+			WHERE id = $ideaId;
+		""");
+    notifyListeners();
+  }
+
   List<Idea> mapsToIdeas(List<Map<String, dynamic>> maps) {
     return maps.map<Idea>(Idea.fromMap).toList();
   }
@@ -82,24 +94,30 @@ class Idea {
   final String text;
   final DateTime createdAt;
   final bool isArchived;
+  final int? lastRecommended;
 
-  const Idea(
-      {required this.id,
-      required this.text,
-      required this.createdAt,
-      required this.isArchived});
+  const Idea({
+    required this.id,
+    required this.text,
+    required this.createdAt,
+    required this.isArchived,
+    required this.lastRecommended,
+  });
+
   Idea.fromMap(Map<String, dynamic> res)
       : id = res["id"],
         text = res["text"],
+        createdAt = DateTime.fromMillisecondsSinceEpoch(res["createdAt"]),
         isArchived = res["isArchived"] == 1,
-        createdAt = DateTime.fromMillisecondsSinceEpoch(res["createdAt"]);
+        lastRecommended = res["lastRecommended"];
 
   Map<String, Object?> toMap() {
     return {
       "id": id,
       "text": text,
       "createdAt": createdAt.millisecondsSinceEpoch,
-      "isArchived": isArchived ? 1 : 0
+      "isArchived": isArchived ? 1 : 0,
+      "lastRecommended": lastRecommended,
     };
   }
 }

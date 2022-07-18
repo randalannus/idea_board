@@ -7,14 +7,16 @@ class DBHandler {
 
   static Future<Database> initializeDB() async {
     String path = await getDatabasesPath();
-    return openDatabase(join(path, dbName), version: 4,
+    return openDatabase(join(path, dbName), version: 5,
         onCreate: (db, version) async {
-      _createTables(db);
+      await _createTables(db);
     }, onUpgrade: (db, oldVersion, newVersion) async {
       if (oldVersion <= 3) {
-        _dropTables(db);
-        _createTables(db);
+        await _dropTables(db);
+        await _createTables(db);
         return;
+      } else if (oldVersion == 4) {
+        await _4to5(db);
       }
     });
   }
@@ -25,8 +27,17 @@ class DBHandler {
 				id INTEGER PRIMARY KEY,
 				text TEXT NOT NULL,
 				createdAt INTEGER NOT NULL,
-				isArchived INTEGER NOT NULL
+				isArchived INTEGER NOT NULL,
+				lastRecommended INTEGER
 			);""",
+    );
+  }
+
+  static Future<void> _4to5(Database db) async {
+    await db.execute(
+      """ALTER TABLE $ideasTable
+  			ADD lastRecommended INTEGER;
+			""",
     );
   }
 
