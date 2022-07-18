@@ -3,11 +3,17 @@ import 'package:idea_board/db_handler.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
+const fId = "id";
+const fText = "text";
+const fCreatedAt = "createdAt";
+const fIsArchived = "isArchived";
+const fLastRecommended = "lastRecommended";
+
 class IdeasProvider with ChangeNotifier {
   Future<Idea> getIdea(int id) async {
     final db = await DBHandler.initializeDB();
     final maps = await db.query(DBHandler.ideasTable,
-        where: 'id = ?', whereArgs: [id], limit: 1);
+        where: "$fId = ?", whereArgs: [id], limit: 1);
     return Idea.fromMap(maps[0]);
   }
 
@@ -32,11 +38,11 @@ class IdeasProvider with ChangeNotifier {
 
   Future<void> editText(int id, String text) async {
     final db = await DBHandler.initializeDB();
-    final Map<String, Object?> map = {"id": id, "text": text};
+    final Map<String, Object?> map = {fId: id, fText: text};
     await db.update(
       DBHandler.ideasTable,
       map,
-      where: 'id = ?',
+      where: "$fId = ?",
       whereArgs: [id],
     );
     notifyListeners();
@@ -44,11 +50,14 @@ class IdeasProvider with ChangeNotifier {
 
   Future<void> archive(int id) async {
     final db = await DBHandler.initializeDB();
-    final Map<String, Object?> map = {"id": id, "isArchived": 1};
+    final Map<String, Object?> map = {
+      fIsArchived: 1,
+      fLastRecommended: null,
+    };
     await db.update(
       DBHandler.ideasTable,
       map,
-      where: 'id = ?',
+      where: "$fId = ?",
       whereArgs: [id],
     );
     notifyListeners();
@@ -56,31 +65,22 @@ class IdeasProvider with ChangeNotifier {
 
   Future<List<Idea>> listIdeas({bool includeArchived = false}) async {
     final db = await DBHandler.initializeDB();
-    String? where;
-    List<Object?>? whereArgs;
-    if (!includeArchived) {
-      where = "isArchived = ?";
-      whereArgs = [0];
-    }
-    final maps = await db.query(DBHandler.ideasTable,
-        orderBy: "createdAt ASC", where: where, whereArgs: whereArgs);
+    final maps = await db.query(
+      DBHandler.ideasTable,
+      orderBy: "$fCreatedAt ASC",
+      where: includeArchived ? null : "$fIsArchived = 0",
+    );
     return mapsToIdeas(maps);
   }
 
-  Future<Idea> selectRandom() async {
+  Future<void> setLastRecommended(int id, int lastRecommended) async {
     final db = await DBHandler.initializeDB();
-    final maps = await db.rawQuery(
-        "SELECT * FROM ${DBHandler.ideasTable} ORDER BY RANDOM() LIMIT 1;");
-    return Idea.fromMap(maps[0]);
-  }
-
-  Future<void> setLastRecommended(int ideaId, int lastRecommended) async {
-    final db = await DBHandler.initializeDB();
-    await db.rawUpdate("""
-			UPDATE ${DBHandler.ideasTable}
-			SET lastRecommended = $lastRecommended
-			WHERE id = $ideaId;
-		""");
+    await db.update(
+      DBHandler.ideasTable,
+      {fLastRecommended: lastRecommended},
+      where: "$fId = ?",
+      whereArgs: [id],
+    );
     notifyListeners();
   }
 
@@ -105,19 +105,19 @@ class Idea {
   });
 
   Idea.fromMap(Map<String, dynamic> res)
-      : id = res["id"],
-        text = res["text"],
-        createdAt = DateTime.fromMillisecondsSinceEpoch(res["createdAt"]),
-        isArchived = res["isArchived"] == 1,
-        lastRecommended = res["lastRecommended"];
+      : id = res[fId],
+        text = res[fText],
+        createdAt = DateTime.fromMillisecondsSinceEpoch(res[fCreatedAt]),
+        isArchived = res[fIsArchived] == 1,
+        lastRecommended = res[fLastRecommended];
 
   Map<String, Object?> toMap() {
     return {
-      "id": id,
-      "text": text,
-      "createdAt": createdAt.millisecondsSinceEpoch,
-      "isArchived": isArchived ? 1 : 0,
-      "lastRecommended": lastRecommended,
+      fId: id,
+      fText: text,
+      fCreatedAt: createdAt.millisecondsSinceEpoch,
+      fIsArchived: isArchived ? 1 : 0,
+      fLastRecommended: lastRecommended,
     };
   }
 }
