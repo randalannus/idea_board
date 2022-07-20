@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:idea_board/db_handler.dart';
 import 'package:idea_board/feed_page.dart';
@@ -48,28 +49,42 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Ideas"),
+      appBar: AppBar(
+        title: const Text("Ideas"),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _fabPressed(context),
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+                onPressed: () => _setPage(0),
+                icon: const Icon(Icons.home_filled)),
+            const SizedBox.shrink(),
+            IconButton(
+              onPressed: () => _setPage(1),
+              icon: const Icon(Icons.list),
+            ),
+          ],
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _fabPressed(context),
-          child: const Icon(Icons.add),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        bottomNavigationBar: BottomAppBar(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                  onPressed: () => _setPage(0),
-                  icon: const Icon(Icons.home_filled)),
-              const SizedBox.shrink(),
-              IconButton(
-                  onPressed: () => _setPage(1), icon: const Icon(Icons.list))
-            ],
-          ),
-        ),
-        body: Center(child: pageContent(_activePage)));
+      ),
+      body: PageTransitionSwitcher(
+        reverse: _activePage == 0,
+        transitionBuilder: ((child, animation, secondaryAnimation) {
+          return SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: SharedAxisTransitionType.horizontal,
+            child: child,
+          );
+        }),
+        child: pageContent(_activePage),
+      ),
+    );
   }
 }
 
