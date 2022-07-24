@@ -21,7 +21,7 @@ class IdeaCard extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 50),
           child: Text(
             idea.text,
-            textAlign: TextAlign.left,
+            textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyText2,
           ),
         ),

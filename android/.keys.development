@@ -1,0 +1,4 @@
+storePassword=android
+keyPassword=android
+keyAlias=androiddebugkey
+storeFile=/home/oliver/.android/debug.keystore
