@@ -29,15 +29,15 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
 def debugKeystoreProperties = new Properties()
 def debugKeystorePropertiesFile = rootProject.file('.keys.development')
-def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
 if (debugKeystorePropertiesFile.exists()) {
-    debugKeystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    debugKeystoreProperties.load(new FileInputStream(debugKeystorePropertiesFile))
 }
 
 android {

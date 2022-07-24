@@ -58,7 +58,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAW3LY3Szy_NamYky0eEzFxGRLDO9bMfQE',
-    appId: '1:1023311527913:android:969e1c321ed51fecce9578',
+    appId: '1:1023311527913:android:2bec2a72b95f7fe9ce9578',
     messagingSenderId: '1023311527913',
     projectId: 'mind-boxes',
     storageBucket: 'mind-boxes.appspot.com',
@@ -70,6 +70,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1023311527913',
     projectId: 'mind-boxes',
     storageBucket: 'mind-boxes.appspot.com',
+    androidClientId: '1023311527913-ghsu3juriftq0sa4f5l4q6jca0sv9u2p.apps.googleusercontent.com',
     iosClientId: '1023311527913-uvea9icoqei3lia0514ut4iog1n377ph.apps.googleusercontent.com',
     iosBundleId: 'com.example.ideaBoard',
   );

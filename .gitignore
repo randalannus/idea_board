@@ -51,3 +51,6 @@ app.*.map.json
 
 # Android keystore
 upload-keystore.jks
+
+# Key files
+/android/.*

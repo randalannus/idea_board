@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1023311527913:android:969e1c321ed51fecce9578",
+        "mobilesdk_app_id": "1:1023311527913:android:2bec2a72b95f7fe9ce9578",
         "android_client_info": {
-          "package_name": "com.example.idea_board"
+          "package_name": "com.prosperity_innovation.idea_board"
         }
       },
       "oauth_client": [
