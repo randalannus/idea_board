@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1023311527913",
+    "project_id": "mind-boxes",
+    "storage_bucket": "mind-boxes.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1023311527913:android:969e1c321ed51fecce9578",
+        "android_client_info": {
+          "package_name": "com.example.idea_board"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1023311527913-deiuehghavfc40i632qdsf6jjpjf9v0q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAW3LY3Szy_NamYky0eEzFxGRLDO9bMfQE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1023311527913-deiuehghavfc40i632qdsf6jjpjf9v0q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1023311527913-uvea9icoqei3lia0514ut4iog1n377ph.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.ideaBoard"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
