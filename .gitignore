@@ -51,9 +51,3 @@ app.*.map.json
 
 # Android keystore
 upload-keystore.jks
-
-# Key files
-/android/.*
-
-/android/google-services.json
-/ios/GoogleService-Info.plist
