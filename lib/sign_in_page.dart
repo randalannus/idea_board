@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_signin_button/button_list.dart';
+import 'package:flutter_signin_button/button_view.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class SignInPage extends StatelessWidget {
@@ -7,14 +9,26 @@ class SignInPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       body: Center(
-        child: TextButton(
-          onPressed: signInWithGoogle,
-          child: const Text(
-            'Login',
-            style: TextStyle(fontSize: 20.0),
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Sign in",
+              style: theme.textTheme.headlineLarge!.copyWith(
+                color: theme.primaryColor,
+              ),
+            ),
+            const SizedBox(
+              height: 100,
+            ),
+            SignInButton(
+              Buttons.Google,
+              onPressed: signInWithGoogle,
+            )
+          ],
         ),
       ),
     );
