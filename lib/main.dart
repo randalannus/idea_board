@@ -44,59 +44,52 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _activePage = 0;
 
-  @override
-  void initState() {
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user == null) {
-        //Send to auth screen
-        _setPage(2);
-      } else {
-        _setPage(0);
-      }
-    });
-  }
-
   void _setPage(int pageNumber) {
     setState(() {
-      if (FirebaseAuth.instance.currentUser == null && pageNumber != 2) {
-        return;
-      }
       _activePage = pageNumber;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text("Ideas"),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _fabPressed(context),
-          child: const Icon(Icons.add),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        bottomNavigationBar: BottomAppBar(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                  onPressed: () => _setPage(0),
-                  icon: const Icon(Icons.home_filled)),
-              const SizedBox.shrink(),
-              IconButton(
-                  onPressed: () => _setPage(1), icon: const Icon(Icons.list))
-            ],
-          ),
-        ),
-        body: Center(child: pageContent(_activePage)));
+    return StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.userChanges(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data == null) {
+            return const SignInPage();
+          }
+          return Scaffold(
+              appBar: AppBar(
+                title: const Text("Ideas"),
+              ),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () => _fabPressed(context),
+                child: const Icon(Icons.add),
+              ),
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.centerDocked,
+              bottomNavigationBar: BottomAppBar(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                        onPressed: () => _setPage(0),
+                        icon: const Icon(Icons.home_filled)),
+                    const SizedBox.shrink(),
+                    IconButton(
+                        onPressed: () => _setPage(1),
+                        icon: const Icon(Icons.list))
+                  ],
+                ),
+              ),
+              body: Center(child: pageContent(_activePage)));
+        });
   }
 }
 
 Widget pageContent(int pageIndex) {
   if (pageIndex == 0) return const FeedPage();
   if (pageIndex == 1) return const ListPage();
-  if (pageIndex == 2) return const SignInPage();
   throw "Invalid page index";
 }
 

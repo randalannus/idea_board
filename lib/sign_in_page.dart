@@ -7,35 +7,35 @@ class SignInPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        child: Center(
-      child: TextButton(
-        child: const Text(
-          'Login',
-          style: TextStyle(fontSize: 20.0),
+    return Scaffold(
+      body: Center(
+        child: TextButton(
+          onPressed: signInWithGoogle,
+          child: const Text(
+            'Login',
+            style: TextStyle(fontSize: 20.0),
+          ),
         ),
-        onPressed: () {
-          signInWithGoogle();
-        },
       ),
-    ));
+    );
   }
 
-  Future<UserCredential> signInWithGoogle() async {
+  Future<UserCredential?> signInWithGoogle() async {
     // Trigger the authentication flow
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-    // Obtain the auth details from the request
-    final GoogleSignInAuthentication? googleAuth =
-        await googleUser?.authentication;
+    // If authentication is aborted
+    if (googleUser == null) return null;
 
-    // Create a new credential
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+
     final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
     );
 
-    // Once signed in, return the UserCredential
     return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 }
