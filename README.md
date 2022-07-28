@@ -18,10 +18,12 @@ samples, guidance on mobile development, and a full API reference.
 
 
 ## Setting up firebase (relevant links)
-https://firebase.google.com/docs/flutter/setup
-https://firebase.google.com/docs/auth/flutter/start
+* [Add Firebase to your Flutter app](https://firebase.google.com/docs/flutter/setup)
+* [Get Started with Firebase Authentication on Flutter](https://firebase.google.com/docs/auth/flutter/start)
+
+To compile the android app, you need to add a `google-services.json` file to `/android/app`. This is accomplished by running the `flutterfire configure` command.
 
 You need to add your SHA1 key to firebase in order to use google sign-in.
 https://stackoverflow.com/questions/51845559/generate-sha-1-for-flutter-react-native-android-native-app
 
-Project: mind-boxes (evenstad)
+Project: mind-boxes

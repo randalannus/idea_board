@@ -10,16 +10,11 @@ import 'package:idea_board/write_page.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DBHandler.initializeDB();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  //await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -67,7 +62,6 @@ class _MyHomePageState extends State<MyHomePage> {
         return;
       }
       _activePage = pageNumber;
-      print(_activePage);
     });
   }
 
