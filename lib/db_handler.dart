@@ -33,6 +33,7 @@ class DBHandler {
     );
   }
 
+  // ignore: non_constant_identifier_names
   static Future<void> _4to5(Database db) async {
     await db.execute(
       """ALTER TABLE $ideasTable
