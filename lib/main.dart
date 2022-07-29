@@ -1,6 +1,7 @@
 import 'package:animations/animations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:idea_board/db_handler.dart';
 import 'package:idea_board/feed_page.dart';
 import 'package:idea_board/ideas.dart';
@@ -16,6 +17,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DBHandler.initializeDB();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Force device orientation to vertical
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MyApp());
 }
 
@@ -111,15 +114,6 @@ void _fabPressed(BuildContext context) {
         MaterialPageRoute<void>(
             builder: (context) => WritePage(ideaId: idea.id)));
   });
-}
-
-dynamic getTransitionBuilder(SharedAxisTransitionType transitionType) {
-  return (child, animation, secondaryAnimation) => SharedAxisTransition(
-        animation: animation,
-        secondaryAnimation: secondaryAnimation,
-        transitionType: transitionType,
-        child: child,
-      );
 }
 
 class MyPageTransitionSwitcher extends PageTransitionSwitcher {
