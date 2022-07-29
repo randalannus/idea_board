@@ -29,20 +29,30 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Idea Board',
         theme: Themes.mainTheme,
-        home: const MyHomePage(),
+        home: StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.userChanges(),
+          builder: (context, snapshot) {
+            return MyPageTransitionSwitcher(
+              transitionType: SharedAxisTransitionType.scaled,
+              child: !snapshot.hasData || snapshot.data == null
+                  ? const SignInPage()
+                  : const HomePage(),
+            );
+          },
+        ),
       ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomePageState extends State<HomePage> {
   int _activePage = 0;
 
   void _setPage(int pageNumber) {
@@ -53,49 +63,37 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.userChanges(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data == null) {
-            return const SignInPage();
-          }
-          return Scaffold(
-              appBar: AppBar(
-                title: const Text("Ideas"),
-              ),
-              floatingActionButton: FloatingActionButton(
-                onPressed: () => _fabPressed(context),
-                child: const Icon(Icons.add),
-              ),
-              floatingActionButtonLocation:
-                  FloatingActionButtonLocation.centerDocked,
-              bottomNavigationBar: BottomAppBar(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
-                        onPressed: () => _setPage(0),
-                        icon: const Icon(Icons.home_filled)),
-                    const SizedBox.shrink(),
-                    IconButton(
-                        onPressed: () => _setPage(1),
-                        icon: const Icon(Icons.list))
-                  ],
-                ),
-              ),
-              body: PageTransitionSwitcher(
-                reverse: _activePage == 0,
-                transitionBuilder: ((child, animation, secondaryAnimation) {
-                  return SharedAxisTransition(
-                    animation: animation,
-                    secondaryAnimation: secondaryAnimation,
-                    transitionType: SharedAxisTransitionType.horizontal,
-                    child: child,
-                  );
-                }),
-                child: pageContent(_activePage),
-              ));
-        });
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Ideas"),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _fabPressed(context),
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              onPressed: () => _setPage(0),
+              icon: const Icon(Icons.home_filled),
+            ),
+            const SizedBox.shrink(),
+            IconButton(
+              onPressed: () => _setPage(1),
+              icon: const Icon(Icons.list),
+            )
+          ],
+        ),
+      ),
+      body: MyPageTransitionSwitcher(
+        reverse: _activePage == 0,
+        transitionType: SharedAxisTransitionType.horizontal,
+        child: pageContent(_activePage),
+      ),
+    );
   }
 }
 
@@ -113,4 +111,35 @@ void _fabPressed(BuildContext context) {
         MaterialPageRoute<void>(
             builder: (context) => WritePage(ideaId: idea.id)));
   });
+}
+
+dynamic getTransitionBuilder(SharedAxisTransitionType transitionType) {
+  return (child, animation, secondaryAnimation) => SharedAxisTransition(
+        animation: animation,
+        secondaryAnimation: secondaryAnimation,
+        transitionType: transitionType,
+        child: child,
+      );
+}
+
+class MyPageTransitionSwitcher extends PageTransitionSwitcher {
+  MyPageTransitionSwitcher({
+    required SharedAxisTransitionType transitionType,
+    Widget? child,
+    bool reverse = false,
+    Duration duration = const Duration(milliseconds: 300),
+    Key? key,
+  }) : super(
+          transitionBuilder: (child, animation, secondaryAnimation) =>
+              SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: transitionType,
+            child: child,
+          ),
+          child: child,
+          reverse: reverse,
+          duration: duration,
+          key: key,
+        );
 }
