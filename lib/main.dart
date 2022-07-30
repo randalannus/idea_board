@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:idea_board/db_handler.dart';
 import 'package:idea_board/feed_page.dart';
@@ -11,10 +12,17 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+String fbHost = const String.fromEnvironment("FIREBASE_EMULATOR_HOST");
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DBHandler.initializeDB();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print("fbHost: $fbHost");
+  if (kDebugMode && fbHost.isNotEmpty) {
+    print("here");
+    FirebaseAuth.instance.useAuthEmulator(fbHost, 9099);
+  }
   runApp(const MyApp());
 }
 
