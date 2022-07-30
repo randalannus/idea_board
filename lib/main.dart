@@ -31,12 +31,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<IdeasProvider>(
-      create: (_) => IdeasProvider(),
-      child: MaterialApp(
-        title: 'Idea Board',
-        theme: Themes.mainTheme,
-        home: const MyHomePage(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => IdeasProvider()),
+        StreamProvider<User?>.value(
+          value: FirebaseAuth.instance.userChanges(),
+          initialData: FirebaseAuth.instance.currentUser,
+        ),
+      ],
+      child: ChangeNotifierProvider<IdeasProvider>(
+        create: (_) => IdeasProvider(),
+        child: MaterialApp(
+          title: 'Idea Board',
+          theme: Themes.mainTheme,
+          home: const MyHomePage(),
+        ),
       ),
     );
   }
@@ -60,38 +69,33 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.userChanges(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data == null) {
-            return const SignInPage();
-          }
-          return Scaffold(
-              appBar: AppBar(
-                title: const Text("Ideas"),
-              ),
-              floatingActionButton: FloatingActionButton(
-                onPressed: () => _fabPressed(context),
-                child: const Icon(Icons.add),
-              ),
-              floatingActionButtonLocation:
-                  FloatingActionButtonLocation.centerDocked,
-              bottomNavigationBar: BottomAppBar(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
-                        onPressed: () => _setPage(0),
-                        icon: const Icon(Icons.home_filled)),
-                    const SizedBox.shrink(),
-                    IconButton(
-                        onPressed: () => _setPage(1),
-                        icon: const Icon(Icons.list))
-                  ],
-                ),
-              ),
-              body: Center(child: pageContent(_activePage)));
-        });
+    User? user = Provider.of<User?>(context);
+    if (user == null) {
+      return const SignInPage();
+    }
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text("Ideas"),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _fabPressed(context),
+          child: const Icon(Icons.add),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: BottomAppBar(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                  onPressed: () => _setPage(0),
+                  icon: const Icon(Icons.home_filled)),
+              const SizedBox.shrink(),
+              IconButton(
+                  onPressed: () => _setPage(1), icon: const Icon(Icons.list))
+            ],
+          ),
+        ),
+        body: Center(child: pageContent(_activePage)));
   }
 }
 
