@@ -18,9 +18,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DBHandler.initializeDB();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print("fbHost: $fbHost");
   if (kDebugMode && fbHost.isNotEmpty) {
-    print("here");
     FirebaseAuth.instance.useAuthEmulator(fbHost, 9099);
   }
   runApp(const MyApp());
