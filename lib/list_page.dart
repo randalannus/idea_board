@@ -31,6 +31,7 @@ class ListPage extends StatelessWidget {
   Widget ideasListView(List<Idea> ideas) {
     const double sepHeight = 8;
     return ListView.separated(
+      key: const PageStorageKey("ideasList"),
       itemCount: ideas.length + 2, // Add separators to the beginning and end
       itemBuilder: (context, index) {
         if (index == 0 || index == ideas.length + 1) {

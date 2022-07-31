@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:animations/animations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:idea_board/legacy/db_handler.dart';
+import 'package:flutter/services.dart';
 import 'package:idea_board/feed_page.dart';
 import 'package:idea_board/legacy/ideas.dart';
 import 'package:idea_board/list_page.dart';
@@ -23,6 +25,8 @@ void main() async {
     FirebaseAuth.instance.useAuthEmulator(fbHost, 9099);
     FirebaseFirestore.instance.useFirestoreEmulator(fbHost, 8080);
   }
+  // Force device orientation to vertical
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MyApp());
 }
 
@@ -42,20 +46,30 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Idea Board',
         theme: Themes.mainTheme,
-        home: const MyHomePage(),
+        home: StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.userChanges(),
+          builder: (context, snapshot) {
+            return MyPageTransitionSwitcher(
+              transitionType: SharedAxisTransitionType.scaled,
+              child: !snapshot.hasData || snapshot.data == null
+                  ? const SignInPage()
+                  : const HomePage(),
+            );
+          },
+        ),
       ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomePageState extends State<HomePage> {
   int _activePage = 0;
 
   void _setPage(int pageNumber) {
@@ -92,7 +106,11 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
         ),
-        body: Center(child: pageContent(_activePage)));
+        body: MyPageTransitionSwitcher(
+          reverse: _activePage == 0,
+          transitionType: SharedAxisTransitionType.horizontal,
+          child: pageContent(_activePage),
+        ));
   }
 }
 
@@ -110,4 +128,26 @@ void _fabPressed(BuildContext context) {
         MaterialPageRoute<void>(
             builder: (context) => WritePage(ideaId: idea.id)));
   });
+}
+
+class MyPageTransitionSwitcher extends PageTransitionSwitcher {
+  MyPageTransitionSwitcher({
+    required SharedAxisTransitionType transitionType,
+    Widget? child,
+    bool reverse = false,
+    Duration duration = const Duration(milliseconds: 300),
+    Key? key,
+  }) : super(
+          transitionBuilder: (child, animation, secondaryAnimation) =>
+              SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: transitionType,
+            child: child,
+          ),
+          child: child,
+          reverse: reverse,
+          duration: duration,
+          key: key,
+        );
 }
