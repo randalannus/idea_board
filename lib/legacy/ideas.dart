@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:idea_board/db_handler.dart';
+import 'package:idea_board/legacy/db_handler.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
+import 'package:idea_board/model/idea.dart';
 
 const fId = "id";
 const fText = "text";
@@ -14,6 +15,7 @@ class IdeasProvider with ChangeNotifier {
     final db = await DBHandler.initializeDB();
     final maps = await db.query(DBHandler.ideasTable,
         where: "$fId = ?", whereArgs: [id], limit: 1);
+    // ignore: deprecated_member_use_from_same_package
     return Idea.fromMap(maps[0]);
   }
 
@@ -29,6 +31,7 @@ class IdeasProvider with ChangeNotifier {
 
     await db.insert(
       DBHandler.ideasTable,
+      // ignore: deprecated_member_use_from_same_package
       idea.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -85,39 +88,7 @@ class IdeasProvider with ChangeNotifier {
   }
 
   List<Idea> mapsToIdeas(List<Map<String, dynamic>> maps) {
+    // ignore: deprecated_member_use_from_same_package
     return maps.map<Idea>(Idea.fromMap).toList();
-  }
-}
-
-class Idea {
-  final int id;
-  final String text;
-  final DateTime createdAt;
-  final bool isArchived;
-  final int? lastRecommended;
-
-  const Idea({
-    required this.id,
-    required this.text,
-    required this.createdAt,
-    required this.isArchived,
-    required this.lastRecommended,
-  });
-
-  Idea.fromMap(Map<String, dynamic> res)
-      : id = res[fId],
-        text = res[fText],
-        createdAt = DateTime.fromMillisecondsSinceEpoch(res[fCreatedAt]),
-        isArchived = res[fIsArchived] == 1,
-        lastRecommended = res[fLastRecommended];
-
-  Map<String, Object?> toMap() {
-    return {
-      fId: id,
-      fText: text,
-      fCreatedAt: createdAt.millisecondsSinceEpoch,
-      fIsArchived: isArchived ? 1 : 0,
-      fLastRecommended: lastRecommended,
-    };
   }
 }

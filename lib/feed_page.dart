@@ -2,9 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:idea_board/idea_card.dart';
-import 'package:idea_board/ideas.dart';
+import 'package:idea_board/legacy/ideas.dart';
 import 'package:provider/provider.dart';
 import 'package:tiktoklikescroller/tiktoklikescroller.dart';
+import 'package:idea_board/model/idea.dart';
 
 class FeedPage extends StatelessWidget {
   const FeedPage({Key? key}) : super(key: key);

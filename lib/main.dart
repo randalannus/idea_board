@@ -1,9 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:idea_board/db_handler.dart';
+import 'package:idea_board/legacy/db_handler.dart';
 import 'package:idea_board/feed_page.dart';
-import 'package:idea_board/ideas.dart';
+import 'package:idea_board/legacy/ideas.dart';
 import 'package:idea_board/list_page.dart';
 import 'package:idea_board/sign_in_page.dart';
 import 'package:idea_board/themes.dart';
@@ -20,6 +21,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   if (kDebugMode && fbHost.isNotEmpty) {
     FirebaseAuth.instance.useAuthEmulator(fbHost, 9099);
+    FirebaseFirestore.instance.useFirestoreEmulator(fbHost, 8080);
   }
   runApp(const MyApp());
 }
@@ -37,13 +39,10 @@ class MyApp extends StatelessWidget {
           initialData: FirebaseAuth.instance.currentUser,
         ),
       ],
-      child: ChangeNotifierProvider<IdeasProvider>(
-        create: (_) => IdeasProvider(),
-        child: MaterialApp(
-          title: 'Idea Board',
-          theme: Themes.mainTheme,
-          home: const MyHomePage(),
-        ),
+      child: MaterialApp(
+        title: 'Idea Board',
+        theme: Themes.mainTheme,
+        home: const MyHomePage(),
       ),
     );
   }

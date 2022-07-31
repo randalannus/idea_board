@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:idea_board/ideas.dart';
+import 'package:idea_board/legacy/ideas.dart';
 import 'package:provider/provider.dart';
 
 class WritePage extends StatelessWidget {

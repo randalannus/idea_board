@@ -1,7 +1,7 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
-import 'package:idea_board/ideas.dart';
 import 'package:idea_board/write_page.dart';
+import 'package:idea_board/model/idea.dart';
 
 class IdeaCard extends StatelessWidget {
   final Idea idea;
