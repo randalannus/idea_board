@@ -1,21 +1,6 @@
 # idea_board
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
-
+An app for collecting your best ideas.
 
 ## Setting up firebase (relevant links)
 * [Add Firebase to your Flutter app](https://firebase.google.com/docs/flutter/setup)
@@ -27,3 +12,14 @@ You need to add your SHA1 key to firebase in order to use google sign-in.
 https://stackoverflow.com/questions/51845559/generate-sha-1-for-flutter-react-native-android-native-app
 
 Project: mind-boxes
+
+## Setting up firebase emulator
+If you have already installed firebase run `firebase emulators:start` in the project directory to start the emulators.
+
+If you provide the argument `--dart-define=FIREBASE_EMULATOR_HOST=<your-emulator-device-ip>` to `flutter run`, then
+debug builds will use the emulator. To find your device ip run `ipconfig` on windows and look for "ipv4 address".
+
+Add `"args": ["--dart-define=FIREBASE_EMULATOR_HOST=<your-emulator-device-ip>"]` to your VS Code launch config to
+provide the argument.
+
+
