@@ -67,7 +67,7 @@ class IdeasProvider with ChangeNotifier {
     final db = await DBHandler.initializeDB();
     final maps = await db.query(
       DBHandler.ideasTable,
-      orderBy: "$fCreatedAt ASC",
+      orderBy: "$fCreatedAt DESC",
       where: includeArchived ? null : "$fIsArchived = 0",
     );
     return mapsToIdeas(maps);
