@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:idea_board/idea_card.dart';
-import 'package:idea_board/legacy/ideas.dart';
 import 'package:provider/provider.dart';
 import 'package:idea_board/model/idea.dart';
 
@@ -9,22 +8,13 @@ class ListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<IdeasProvider>(builder: (context, ideasProvider, _) {
-      return SizedBox.expand(
-          child: FutureBuilder<List<Idea>>(
-              future: ideasProvider.listIdeas(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const SizedBox.shrink();
-                }
-                List<Idea> ideas = snapshot.data!;
-                if (ideas.isEmpty) {
-                  return const Center(
-                    child: Text("Press + to create an idea"),
-                  );
-                }
-                return ideasListView(ideas);
-              }));
+    return Consumer<List<Idea>>(builder: (context, ideas, _) {
+      if (ideas.isEmpty) {
+        return const Center(
+          child: Text("Press + to create an idea"),
+        );
+      }
+      return ideasListView(ideas);
     });
   }
 

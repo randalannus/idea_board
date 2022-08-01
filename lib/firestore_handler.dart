@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:idea_board/legacy/ideas.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:uuid/uuid.dart';
 
@@ -39,14 +38,14 @@ class FirestoreHandler {
   /// If the idea does not exist, a [FirebaseException] will be thrown.
   static Future<void> editIdeaText(
       String userId, String ideaId, String text) async {
-    var map = {fText: text};
+    var map = {Idea.fText: text};
     await _ideasColRef(userId).doc(ideaId).update(map);
   }
 
   /// Archives an idea.
   /// If the idea does not exist, a [FirebaseException] will be thrown.
   static Future<void> archiveIdea(String userId, String ideaId) async {
-    var map = {fIsArchived: true};
+    var map = {Idea.fIsArchived: true};
     await _ideasColRef(userId).doc(ideaId).update(map);
   }
 
@@ -66,12 +65,12 @@ class FirestoreHandler {
 
   /// Sets the lastRecommended field of an idea.
   /// If the idea does not exist, a [FirebaseException] will be thrown.
-  static Future<void> setIdeaLastRecommended(
-    String userId,
-    String ideaId, {
+  static Future<void> setIdeaLastRecommended({
+    required String userId,
+    required String ideaId,
     required int lastRecommended,
   }) async {
-    var map = {fLastRecommended: lastRecommended};
+    var map = {Idea.fLastRecommended: lastRecommended};
     await _ideasColRef(userId).doc(ideaId).update(map);
   }
 

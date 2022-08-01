@@ -1,5 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:idea_board/legacy/ideas.dart';
+import 'package:idea_board/firestore_handler.dart';
 import 'package:provider/provider.dart';
 
 class WritePage extends StatelessWidget {
@@ -16,11 +17,7 @@ class WritePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (initialText == null) {
-      Provider.of<IdeasProvider>(context, listen: false)
-          .getIdea(ideaId)
-          .then((idea) => _controller.text = idea.text);
-    }
+    _loadTextIfNeeded(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Edit Idea"),
@@ -53,14 +50,20 @@ class WritePage extends StatelessWidget {
     );
   }
 
-  Future<void> _onTextChanged(BuildContext context, String text) async {
-    await Provider.of<IdeasProvider>(context, listen: false)
-        .editText(ideaId, text);
+  Future<void> _loadTextIfNeeded(BuildContext context) async {
+    if (initialText != null || _controller.text.isNotEmpty) return;
+    User user = Provider.of<User>(context, listen: false);
+    var idea = await FirestoreHandler.getIdea(user.uid, ideaId);
+    _controller.text = idea.text;
   }
 
-  void _onArchivePressed(BuildContext context) {
-    Provider.of<IdeasProvider>(context, listen: false)
-        .archive(ideaId)
-        .then((_) => Navigator.of(context).pop());
+  Future<void> _onTextChanged(BuildContext context, String text) async {
+    User user = Provider.of<User>(context, listen: false);
+    await FirestoreHandler.editIdeaText(user.uid, ideaId, text);
+  }
+
+  Future<void> _onArchivePressed(BuildContext context) async {
+    User user = Provider.of<User>(context, listen: false);
+    await FirestoreHandler.archiveIdea(user.uid, ideaId);
   }
 }
