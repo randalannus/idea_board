@@ -87,6 +87,16 @@ class IdeasProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> canTransferIdeas() async {
+    var ideas = await listIdeas();
+    return ideas.isNotEmpty;
+  }
+
+  Future<void> deleteAllIdeas() async {
+    final db = await DBHandler.initializeDB();
+    await db.delete(DBHandler.ideasTable);
+  }
+
   List<Idea> mapsToIdeas(List<Map<String, dynamic>> maps) {
     // ignore: deprecated_member_use_from_same_package
     return maps.map<Idea>(Idea.fromMap).toList();

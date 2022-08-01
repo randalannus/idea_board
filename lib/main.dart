@@ -93,6 +93,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void initState() {
+    _tryTransferIdeas(context);
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -155,6 +161,36 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     });
+  }
+
+  /// Script for copying all ideas from the local SQL databse to Firestore.
+  /// All ideas are deleted from the SQL database.
+  Future<void> _tryTransferIdeas(BuildContext context) async {
+    var provider = Provider.of<IdeasProvider>(context, listen: false);
+    User user = Provider.of<User>(context, listen: false);
+    bool canTransfer = await provider.canTransferIdeas();
+    if (!canTransfer) return;
+
+    var ideas = await provider.listIdeas();
+    for (var idea in ideas) {
+      var newIdea = await FirestoreHandler.newIdea(user.uid);
+      await FirestoreHandler.editIdeaText(user.uid, newIdea.id, idea.text);
+      if (idea.isArchived) {
+        await FirestoreHandler.archiveIdea(user.uid, newIdea.id);
+      }
+      await FirestoreHandler.setIdeaLastRecommended(
+        userId: user.uid,
+        ideaId: newIdea.id,
+        lastRecommended: idea.lastRecommended,
+      );
+      // ignore: deprecated_member_use_from_same_package
+      await FirestoreHandler.setIdeaCreatedAt(
+        userId: user.uid,
+        ideaId: newIdea.id,
+        createdAt: idea.createdAt,
+      );
+    }
+    await provider.deleteAllIdeas();
   }
 }
 

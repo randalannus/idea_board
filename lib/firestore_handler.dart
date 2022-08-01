@@ -68,9 +68,19 @@ class FirestoreHandler {
   static Future<void> setIdeaLastRecommended({
     required String userId,
     required String ideaId,
-    required int lastRecommended,
+    required int? lastRecommended,
   }) async {
     var map = {Idea.fLastRecommended: lastRecommended};
+    await _ideasColRef(userId).doc(ideaId).update(map);
+  }
+
+  @Deprecated("Only used to transfer ideas from local SQL database")
+  static Future<void> setIdeaCreatedAt({
+    required String userId,
+    required String ideaId,
+    required DateTime createdAt,
+  }) async {
+    var map = {Idea.fCreatedAt: createdAt};
     await _ideasColRef(userId).doc(ideaId).update(map);
   }
 
