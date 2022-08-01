@@ -9,19 +9,19 @@ class ListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<List<Idea>>(builder: (context, ideas, _) {
-      if (ideas.isEmpty) {
+      List<Idea> unarchivedIdeas =
+          ideas.where((idea) => !idea.isArchived).toList();
+      if (unarchivedIdeas.isEmpty) {
         return const Center(
           child: Text("Press + to create an idea"),
         );
       }
-      return ideasListView(ideas);
+      return ideasListView(unarchivedIdeas);
     });
   }
 
-  Widget ideasListView(List<Idea> ideas) {
+  Widget ideasListView(List<Idea> unarchivedIdeas) {
     const double sepHeight = 8;
-    List<Idea> unarchivedIdeas =
-        ideas.where((idea) => !idea.isArchived).toList();
     return ListView.separated(
       key: const PageStorageKey("ideasList"),
       itemCount:
