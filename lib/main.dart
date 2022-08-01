@@ -70,7 +70,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _activePage = 0;
+  static const feedPageIndex = 0;
+  static const listPageIndex = 1;
+
+  int _activePage = feedPageIndex;
 
   void _setPage(int pageNumber) {
     setState(() {
@@ -85,49 +88,53 @@ class _HomePageState extends State<HomePage> {
       return const SignInPage();
     }
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Ideas"),
+      appBar: AppBar(
+        title: const Text("Ideas"),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _fabPressed(context),
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              onPressed: () => _setPage(feedPageIndex),
+              icon: const Icon(Icons.home_filled),
+            ),
+            const SizedBox.shrink(),
+            IconButton(
+              onPressed: () => _setPage(listPageIndex),
+              icon: const Icon(Icons.list),
+            )
+          ],
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _fabPressed(context),
-          child: const Icon(Icons.add),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        bottomNavigationBar: BottomAppBar(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                  onPressed: () => _setPage(0),
-                  icon: const Icon(Icons.home_filled)),
-              const SizedBox.shrink(),
-              IconButton(
-                  onPressed: () => _setPage(1), icon: const Icon(Icons.list))
-            ],
-          ),
-        ),
-        body: MyPageTransitionSwitcher(
-          reverse: _activePage == 0,
-          transitionType: SharedAxisTransitionType.horizontal,
-          child: pageContent(_activePage),
-        ));
+      ),
+      body: MyPageTransitionSwitcher(
+        reverse: _activePage == feedPageIndex,
+        transitionType: SharedAxisTransitionType.horizontal,
+        child: pageContent(_activePage),
+      ),
+    );
   }
-}
 
-Widget pageContent(int pageIndex) {
-  if (pageIndex == 0) return const FeedPage();
-  if (pageIndex == 1) return const ListPage();
-  throw "Invalid page index";
-}
+  Widget pageContent(int pageIndex) {
+    if (pageIndex == feedPageIndex) return const FeedPage();
+    if (pageIndex == listPageIndex) return const ListPage();
+    throw "Invalid page index";
+  }
 
-void _fabPressed(BuildContext context) {
-  final provider = Provider.of<IdeasProvider>(context, listen: false);
-  provider.newIdea().then((idea) {
-    Navigator.push(
-        context,
-        MaterialPageRoute<void>(
-            builder: (context) => WritePage(ideaId: idea.id)));
-  });
+  void _fabPressed(BuildContext context) {
+    final provider = Provider.of<IdeasProvider>(context, listen: false);
+    provider.newIdea().then((idea) {
+      Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+              builder: (context) => WritePage(ideaId: idea.id)));
+    });
+  }
 }
 
 class MyPageTransitionSwitcher extends PageTransitionSwitcher {
