@@ -3,7 +3,6 @@ import 'package:animations/animations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:idea_board/firestore_handler.dart';
 import 'package:idea_board/legacy/db_handler.dart';
 import 'package:flutter/services.dart';
@@ -147,16 +146,18 @@ class _HomePageState extends State<HomePage> {
     throw "Invalid page index";
   }
 
-  void _fabPressed(BuildContext context) {
+  Future<void> _fabPressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
-    FirestoreHandler.newIdea(user.uid).then((idea) {
-      Navigator.push(
-        context,
-        MaterialPageRoute<void>(
-          builder: (context) => WritePage(ideaId: idea.id),
-        ),
-      );
-    });
+    Idea idea = await FirestoreHandler.newIdea(user.uid);
+    if (!mounted) {} // avoid passing BuildContext across sync gaps
+    String? text = await Navigator.push<String>(
+      context,
+      MaterialPageRoute<String>(
+        builder: (context) => WritePage(ideaId: idea.id),
+      ),
+    );
+    if (text == null) throw ArgumentError.notNull("text");
+    await FirestoreHandler.editIdeaText(user.uid, idea.id, text);
   }
 
   /// Script for copying all ideas from the local SQL databse to Firestore.

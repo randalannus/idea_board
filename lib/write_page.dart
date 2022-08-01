@@ -18,35 +18,40 @@ class WritePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     _loadTextIfNeeded(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Edit Idea"),
-        backgroundColor: Theme.of(context).cardColor,
-        iconTheme: Theme.of(context).iconTheme,
-        actions: [
-          IconButton(
-              onPressed: () => _onArchivePressed(context),
-              icon: const Icon(Icons.delete))
-        ],
-      ),
-      body: Center(
-          child: SizedBox.expand(
-        child: Container(
-          color: Theme.of(context).cardColor,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          child: TextField(
-            maxLines: null,
-            expands: true,
-            autofocus: initialText == null || initialText!.isEmpty,
-            controller: _controller,
-            onChanged: (text) async => await _onTextChanged(context, text),
-            focusNode: FocusNode(),
-            style: Theme.of(context).textTheme.bodyText1,
-            decoration: const InputDecoration(border: InputBorder.none),
-            cursorColor: Colors.black,
-          ),
+    return WillPopScope(
+      onWillPop: () {
+        _onBackPressed(context);
+        return Future.value(false);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Edit Idea"),
+          backgroundColor: Theme.of(context).cardColor,
+          iconTheme: Theme.of(context).iconTheme,
+          actions: [
+            IconButton(
+                onPressed: () => _onArchivePressed(context),
+                icon: const Icon(Icons.delete))
+          ],
         ),
-      )),
+        body: Center(
+            child: SizedBox.expand(
+          child: Container(
+            color: Theme.of(context).cardColor,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            child: TextField(
+              maxLines: null,
+              expands: true,
+              autofocus: initialText == null || initialText!.isEmpty,
+              controller: _controller,
+              focusNode: FocusNode(),
+              style: Theme.of(context).textTheme.bodyText1,
+              decoration: const InputDecoration(border: InputBorder.none),
+              cursorColor: Colors.black,
+            ),
+          ),
+        )),
+      ),
     );
   }
 
@@ -57,13 +62,13 @@ class WritePage extends StatelessWidget {
     _controller.text = idea.text;
   }
 
-  Future<void> _onTextChanged(BuildContext context, String text) async {
-    User user = Provider.of<User>(context, listen: false);
-    await FirestoreHandler.editIdeaText(user.uid, ideaId, text);
-  }
-
   Future<void> _onArchivePressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
+    Navigator.of(context).pop(_controller.text);
     await FirestoreHandler.archiveIdea(user.uid, ideaId);
+  }
+
+  void _onBackPressed(BuildContext context) {
+    Navigator.of(context).pop(_controller.text);
   }
 }
