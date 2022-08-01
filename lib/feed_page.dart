@@ -45,7 +45,7 @@ class _FeedState extends State<Feed> {
   List<Idea>? unarchivedIdeas;
 
   /// Ids of ideas that appear in the feed
-  final List<int> feedIds = [];
+  final List<String> feedIds = [];
   final Controller controller = Controller();
   late final IdeasProvider provider;
 
@@ -121,7 +121,7 @@ class _FeedState extends State<Feed> {
   }
 
   /// Finds the idea with the specified id.
-  Idea findIdea(int id) {
+  Idea findIdea(String id) {
     return ideas!.firstWhere((idea) => idea.id == id);
   }
 

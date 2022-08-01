@@ -4,14 +4,14 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import 'package:idea_board/model/idea.dart';
 
-const fId = "id";
-const fText = "text";
-const fCreatedAt = "createdAt";
-const fIsArchived = "isArchived";
-const fLastRecommended = "lastRecommended";
+const fId = Idea.fId;
+const fText = Idea.fText;
+const fCreatedAt = Idea.fCreatedAt;
+const fIsArchived = Idea.fIsArchived;
+const fLastRecommended = Idea.fLastRecommended;
 
 class IdeasProvider with ChangeNotifier {
-  Future<Idea> getIdea(int id) async {
+  Future<Idea> getIdea(String id) async {
     final db = await DBHandler.initializeDB();
     final maps = await db.query(DBHandler.ideasTable,
         where: "$fId = ?", whereArgs: [id], limit: 1);
@@ -22,7 +22,7 @@ class IdeasProvider with ChangeNotifier {
   Future<Idea> newIdea() async {
     final db = await DBHandler.initializeDB();
     final idea = Idea(
-      id: const Uuid().v4().hashCode,
+      id: const Uuid().v4().hashCode.toString(),
       text: "",
       createdAt: DateTime.now(),
       isArchived: false,
@@ -39,7 +39,7 @@ class IdeasProvider with ChangeNotifier {
     return idea;
   }
 
-  Future<void> editText(int id, String text) async {
+  Future<void> editText(String id, String text) async {
     final db = await DBHandler.initializeDB();
     final Map<String, Object?> map = {fId: id, fText: text};
     await db.update(
@@ -51,7 +51,7 @@ class IdeasProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> archive(int id) async {
+  Future<void> archive(String id) async {
     final db = await DBHandler.initializeDB();
     final Map<String, Object?> map = {
       fIsArchived: 1,
@@ -76,7 +76,7 @@ class IdeasProvider with ChangeNotifier {
     return mapsToIdeas(maps);
   }
 
-  Future<void> setLastRecommended(int id, int lastRecommended) async {
+  Future<void> setLastRecommended(String id, int lastRecommended) async {
     final db = await DBHandler.initializeDB();
     await db.update(
       DBHandler.ideasTable,

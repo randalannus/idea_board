@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 class WritePage extends StatelessWidget {
   final _controller = TextEditingController();
-  final int ideaId;
+  final String ideaId;
   final String? initialText;
 
   WritePage({required this.ideaId, this.initialText, Key? key})
