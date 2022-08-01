@@ -120,11 +120,7 @@ class _HomePageState extends State<HomePage> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           IconButton(
-            onPressed: () {
-              _setPage(feedPageIndex);
-              GoogleSignIn().signOut();
-              FirebaseAuth.instance.signOut();
-            },
+            onPressed: () => _setPage(feedPageIndex),
             icon: const Icon(Icons.home_filled),
           ),
           const SizedBox.shrink(),
