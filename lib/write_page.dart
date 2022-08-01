@@ -40,6 +40,7 @@ class WritePage extends StatelessWidget {
           child: TextField(
             maxLines: null,
             expands: true,
+            autofocus: initialText == null || initialText!.isEmpty,
             controller: _controller,
             onChanged: (text) async => await _onTextChanged(context, text),
             focusNode: FocusNode(),
