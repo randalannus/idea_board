@@ -1,30 +1,26 @@
+import 'dart:async';
 import 'dart:math';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:idea_board/firestore_handler.dart';
 import 'package:idea_board/idea_card.dart';
-import 'package:idea_board/ideas.dart';
 import 'package:provider/provider.dart';
 import 'package:tiktoklikescroller/tiktoklikescroller.dart';
+import 'package:idea_board/model/idea.dart';
 
 class FeedPage extends StatelessWidget {
   const FeedPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<IdeasProvider>(
-        builder: (context, provider, _) => FutureBuilder<List<Idea>>(
-            future: provider.listIdeas(includeArchived: true),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const SizedBox();
-              }
-              final ideas = snapshot.data!;
-              bool hasUnarchived = ideas.any((idea) => !idea.isArchived);
-              if (!hasUnarchived) {
-                return const Center(child: Text("Press + to create an idea"));
-              }
-              return Feed(ideas: ideas);
-            }));
+    return Consumer<List<Idea>>(builder: (context, ideas, _) {
+      bool hasUnarchived = ideas.any((idea) => !idea.isArchived);
+      if (!hasUnarchived) {
+        return const Center(child: Text("Press + to create an idea"));
+      }
+      return Feed(ideas: ideas);
+    });
   }
 }
 
@@ -44,9 +40,9 @@ class _FeedState extends State<Feed> {
   List<Idea>? unarchivedIdeas;
 
   /// Ids of ideas that appear in the feed
-  final List<int> feedIds = [];
+  final List<String> feedIds = [];
   final Controller controller = Controller();
-  late final IdeasProvider provider;
+  late final StreamSubscription subscription;
 
   @override
   void initState() {
@@ -54,8 +50,9 @@ class _FeedState extends State<Feed> {
     unarchivedIdeas = findUnarchived(ideas!);
     initFeed();
 
-    provider = Provider.of<IdeasProvider>(context, listen: false);
-    provider.addListener(_providerListener);
+    User user = Provider.of<User>(context, listen: false);
+    subscription =
+        FirestoreHandler.ideasListStream(user.uid).listen(_updateIdeas);
     controller.addListener(_controllerListener);
 
     super.initState();
@@ -63,7 +60,7 @@ class _FeedState extends State<Feed> {
 
   @override
   void dispose() {
-    provider.removeListener(_providerListener);
+    subscription.cancel();
     super.dispose();
   }
 
@@ -91,13 +88,13 @@ class _FeedState extends State<Feed> {
       int index = unarchivedIdeas!.indexOf(idea);
       weights[index] = 0;
       feedIds.add(idea.id);
-      Provider.of<IdeasProvider>(context, listen: false)
-          .setLastRecommended(idea.id, lastIndex + 1 + i);
+      User user = Provider.of<User>(context, listen: false);
+      FirestoreHandler.setIdeaLastRecommended(
+        userId: user.uid,
+        ideaId: idea.id,
+        lastRecommended: lastIndex + 1 + i,
+      );
     }
-  }
-
-  void _providerListener() {
-    provider.listIdeas(includeArchived: true).then(_updateIdeas);
   }
 
   void _updateIdeas(List<Idea> newIdeas) {
@@ -115,12 +112,16 @@ class _FeedState extends State<Feed> {
     final weights = calcWeights(unarchivedIdeas!, lastIndex);
     final idea = randomChoice(unarchivedIdeas!, weights);
     setState(() => feedIds.add(idea.id));
-    Provider.of<IdeasProvider>(context, listen: false)
-        .setLastRecommended(idea.id, lastIndex + 1);
+    User user = Provider.of<User>(context, listen: false);
+    FirestoreHandler.setIdeaLastRecommended(
+      userId: user.uid,
+      ideaId: idea.id,
+      lastRecommended: lastIndex + 1,
+    );
   }
 
   /// Finds the idea with the specified id.
-  Idea findIdea(int id) {
+  Idea findIdea(String id) {
     return ideas!.firstWhere((idea) => idea.id == id);
   }
 

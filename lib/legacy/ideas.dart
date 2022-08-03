@@ -1,26 +1,28 @@
 import 'package:flutter/cupertino.dart';
-import 'package:idea_board/db_handler.dart';
+import 'package:idea_board/legacy/db_handler.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
+import 'package:idea_board/model/idea.dart';
 
-const fId = "id";
-const fText = "text";
-const fCreatedAt = "createdAt";
-const fIsArchived = "isArchived";
-const fLastRecommended = "lastRecommended";
+const fId = Idea.fId;
+const fText = Idea.fText;
+const fCreatedAt = Idea.fCreatedAt;
+const fIsArchived = Idea.fIsArchived;
+const fLastRecommended = Idea.fLastRecommended;
 
 class IdeasProvider with ChangeNotifier {
-  Future<Idea> getIdea(int id) async {
+  Future<Idea> getIdea(String id) async {
     final db = await DBHandler.initializeDB();
     final maps = await db.query(DBHandler.ideasTable,
         where: "$fId = ?", whereArgs: [id], limit: 1);
+    // ignore: deprecated_member_use_from_same_package
     return Idea.fromMap(maps[0]);
   }
 
   Future<Idea> newIdea() async {
     final db = await DBHandler.initializeDB();
     final idea = Idea(
-      id: const Uuid().v4().hashCode,
+      id: const Uuid().v4().hashCode.toString(),
       text: "",
       createdAt: DateTime.now(),
       isArchived: false,
@@ -29,6 +31,7 @@ class IdeasProvider with ChangeNotifier {
 
     await db.insert(
       DBHandler.ideasTable,
+      // ignore: deprecated_member_use_from_same_package
       idea.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -36,7 +39,7 @@ class IdeasProvider with ChangeNotifier {
     return idea;
   }
 
-  Future<void> editText(int id, String text) async {
+  Future<void> editText(String id, String text) async {
     final db = await DBHandler.initializeDB();
     final Map<String, Object?> map = {fId: id, fText: text};
     await db.update(
@@ -48,7 +51,7 @@ class IdeasProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> archive(int id) async {
+  Future<void> archive(String id) async {
     final db = await DBHandler.initializeDB();
     final Map<String, Object?> map = {
       fIsArchived: 1,
@@ -73,7 +76,7 @@ class IdeasProvider with ChangeNotifier {
     return mapsToIdeas(maps);
   }
 
-  Future<void> setLastRecommended(int id, int lastRecommended) async {
+  Future<void> setLastRecommended(String id, int lastRecommended) async {
     final db = await DBHandler.initializeDB();
     await db.update(
       DBHandler.ideasTable,
@@ -84,40 +87,18 @@ class IdeasProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<Idea> mapsToIdeas(List<Map<String, dynamic>> maps) {
-    return maps.map<Idea>(Idea.fromMap).toList();
+  Future<bool> canTransferIdeas() async {
+    var ideas = await listIdeas();
+    return ideas.isNotEmpty;
   }
-}
 
-class Idea {
-  final int id;
-  final String text;
-  final DateTime createdAt;
-  final bool isArchived;
-  final int? lastRecommended;
+  Future<void> deleteAllIdeas() async {
+    final db = await DBHandler.initializeDB();
+    await db.delete(DBHandler.ideasTable);
+  }
 
-  const Idea({
-    required this.id,
-    required this.text,
-    required this.createdAt,
-    required this.isArchived,
-    required this.lastRecommended,
-  });
-
-  Idea.fromMap(Map<String, dynamic> res)
-      : id = res[fId],
-        text = res[fText],
-        createdAt = DateTime.fromMillisecondsSinceEpoch(res[fCreatedAt]),
-        isArchived = res[fIsArchived] == 1,
-        lastRecommended = res[fLastRecommended];
-
-  Map<String, Object?> toMap() {
-    return {
-      fId: id,
-      fText: text,
-      fCreatedAt: createdAt.millisecondsSinceEpoch,
-      fIsArchived: isArchived ? 1 : 0,
-      fLastRecommended: lastRecommended,
-    };
+  List<Idea> mapsToIdeas(List<Map<String, dynamic>> maps) {
+    // ignore: deprecated_member_use_from_same_package
+    return maps.map<Idea>(Idea.fromMap).toList();
   }
 }

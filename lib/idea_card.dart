@@ -1,7 +1,10 @@
 import 'package:animations/animations.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:idea_board/ideas.dart';
+import 'package:idea_board/firestore_handler.dart';
 import 'package:idea_board/write_page.dart';
+import 'package:idea_board/model/idea.dart';
+import 'package:provider/provider.dart';
 
 class IdeaCard extends StatelessWidget {
   final Idea idea;
@@ -21,6 +24,13 @@ class IdeaCard extends StatelessWidget {
       closedColor: Theme.of(context).cardColor,
       closedBuilder: closedBuilder,
       openBuilder: openBuilder,
+      onClosed: (String? text) async {
+        User user = Provider.of<User>(context, listen: false);
+        if (text == null) {
+          throw ArgumentError.notNull("text");
+        }
+        await FirestoreHandler.editIdeaText(user.uid, idea.id, text);
+      },
     );
   }
 
