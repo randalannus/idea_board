@@ -42,6 +42,8 @@ class WritePage extends StatelessWidget {
             child: TextField(
               maxLines: null,
               expands: true,
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.sentences,
               autofocus: initialText == null || initialText!.isEmpty,
               controller: _controller,
               focusNode: FocusNode(),
@@ -59,6 +61,7 @@ class WritePage extends StatelessWidget {
     if (initialText != null || _controller.text.isNotEmpty) return;
     User user = Provider.of<User>(context, listen: false);
     var idea = await FirestoreHandler.getIdea(user.uid, ideaId);
+    if (idea.text.isEmpty) return;
     _controller.text = idea.text;
   }
 
