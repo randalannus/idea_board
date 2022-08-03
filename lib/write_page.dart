@@ -19,7 +19,10 @@ class WritePage extends StatelessWidget {
     if (initialText == null) {
       Provider.of<IdeasProvider>(context, listen: false)
           .getIdea(ideaId)
-          .then((idea) => _controller.text = idea.text);
+          .then((idea) {
+        if (idea.text.isEmpty) return;
+        _controller.text = idea.text;
+      });
     }
     return Scaffold(
       appBar: AppBar(
@@ -36,14 +39,15 @@ class WritePage extends StatelessWidget {
           child: SizedBox.expand(
         child: Container(
           color: Theme.of(context).cardColor,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          padding: const EdgeInsets.only(left: 24, right: 24, top: 16),
           child: TextField(
             maxLines: null,
             expands: true,
+            keyboardType: TextInputType.text,
+            textCapitalization: TextCapitalization.sentences,
             autofocus: initialText == null || initialText!.isEmpty,
             controller: _controller,
             onChanged: (text) async => await _onTextChanged(context, text),
-            focusNode: FocusNode(),
             style: Theme.of(context).textTheme.bodyText1,
             decoration: const InputDecoration(border: InputBorder.none),
             cursorColor: Colors.black,
