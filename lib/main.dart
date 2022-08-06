@@ -1,12 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:animations/animations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:idea_board/firestore_handler.dart';
+import 'package:idea_board/legacy/db_handler.dart';
 import 'package:flutter/services.dart';
-import 'package:idea_board/db_handler.dart';
 import 'package:idea_board/feed_page.dart';
-import 'package:idea_board/ideas.dart';
+import 'package:idea_board/legacy/ideas.dart';
 import 'package:idea_board/list_page.dart';
+import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/sign_in_page.dart';
 import 'package:idea_board/themes.dart';
 import 'package:idea_board/write_page.dart';
@@ -22,6 +25,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   if (kDebugMode && fbHost.isNotEmpty) {
     FirebaseAuth.instance.useAuthEmulator(fbHost, 9099);
+    FirebaseFirestore.instance.useFirestoreEmulator(fbHost, 8080);
   }
   // Force device orientation to vertical
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -33,19 +37,33 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<IdeasProvider>(
-      create: (_) => IdeasProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => IdeasProvider()),
+        StreamProvider<User?>.value(
+          value: FirebaseAuth.instance.userChanges(),
+          initialData: FirebaseAuth.instance.currentUser,
+        ),
+      ],
       child: MaterialApp(
         title: 'Idea Board',
         theme: Themes.mainTheme,
-        home: StreamBuilder<User?>(
-          stream: FirebaseAuth.instance.userChanges(),
-          builder: (context, snapshot) {
+        home: Consumer<User?>(
+          builder: (context, user, _) {
             return MyPageTransitionSwitcher(
               transitionType: SharedAxisTransitionType.scaled,
-              child: !snapshot.hasData || snapshot.data == null
+              child: user == null
                   ? const SignInPage()
-                  : const HomePage(),
+                  : MultiProvider(
+                      providers: [
+                        Provider<User>.value(value: user),
+                        StreamProvider<List<Idea>>.value(
+                          value: FirestoreHandler.ideasListStream(user.uid),
+                          initialData: const [],
+                        )
+                      ],
+                      child: const HomePage(),
+                    ),
             );
           },
         ),
@@ -74,6 +92,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void initState() {
+    _tryTransferIdeas(context);
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -84,27 +108,35 @@ class _HomePageState extends State<HomePage> {
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            IconButton(
-              onPressed: () => _setPage(feedPageIndex),
-              icon: const Icon(Icons.home_filled),
-            ),
-            const SizedBox.shrink(),
-            IconButton(
-              onPressed: () => _setPage(listPageIndex),
-              icon: const Icon(Icons.list),
-            )
-          ],
-        ),
+      bottomNavigationBar: bottomAppBar(),
+      body: body(context),
+    );
+  }
+
+  Widget bottomAppBar() {
+    return BottomAppBar(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          IconButton(
+            onPressed: () => _setPage(feedPageIndex),
+            icon: const Icon(Icons.home_filled),
+          ),
+          const SizedBox.shrink(),
+          IconButton(
+            onPressed: () => _setPage(listPageIndex),
+            icon: const Icon(Icons.list),
+          )
+        ],
       ),
-      body: MyPageTransitionSwitcher(
-        reverse: _activePage == feedPageIndex,
-        transitionType: SharedAxisTransitionType.horizontal,
-        child: pageContent(_activePage),
-      ),
+    );
+  }
+
+  Widget body(BuildContext context) {
+    return MyPageTransitionSwitcher(
+      reverse: _activePage == feedPageIndex,
+      transitionType: SharedAxisTransitionType.horizontal,
+      child: pageContent(_activePage),
     );
   }
 
@@ -114,14 +146,48 @@ class _HomePageState extends State<HomePage> {
     throw "Invalid page index";
   }
 
-  void _fabPressed(BuildContext context) {
-    final provider = Provider.of<IdeasProvider>(context, listen: false);
-    provider.newIdea().then((idea) {
-      Navigator.push(
-          context,
-          MaterialPageRoute<void>(
-              builder: (context) => WritePage(ideaId: idea.id)));
-    });
+  Future<void> _fabPressed(BuildContext context) async {
+    User user = Provider.of<User>(context, listen: false);
+    Idea idea = await FirestoreHandler.newIdea(user.uid);
+    if (!mounted) {} // avoid passing BuildContext across sync gaps
+    String? text = await Navigator.push<String>(
+      context,
+      MaterialPageRoute<String>(
+        builder: (context) => WritePage(ideaId: idea.id),
+      ),
+    );
+    if (text == null) throw ArgumentError.notNull("text");
+    await FirestoreHandler.editIdeaText(user.uid, idea.id, text);
+  }
+
+  /// Script for copying all ideas from the local SQL databse to Firestore.
+  /// All ideas are deleted from the SQL database.
+  Future<void> _tryTransferIdeas(BuildContext context) async {
+    var provider = Provider.of<IdeasProvider>(context, listen: false);
+    User user = Provider.of<User>(context, listen: false);
+    bool canTransfer = await provider.canTransferIdeas();
+    if (!canTransfer) return;
+
+    var ideas = await provider.listIdeas();
+    for (var idea in ideas) {
+      var newIdea = await FirestoreHandler.newIdea(user.uid);
+      await FirestoreHandler.editIdeaText(user.uid, newIdea.id, idea.text);
+      if (idea.isArchived) {
+        await FirestoreHandler.archiveIdea(user.uid, newIdea.id);
+      }
+      await FirestoreHandler.setIdeaLastRecommended(
+        userId: user.uid,
+        ideaId: newIdea.id,
+        lastRecommended: idea.lastRecommended,
+      );
+      // ignore: deprecated_member_use_from_same_package
+      await FirestoreHandler.setIdeaCreatedAt(
+        userId: user.uid,
+        ideaId: newIdea.id,
+        createdAt: idea.createdAt,
+      );
+    }
+    await provider.deleteAllIdeas();
   }
 }
 

@@ -3,6 +3,7 @@
 An app for collecting your best ideas.
 
 ## Setting up firebase (relevant links)
+Follow the first link to install Firebase CLI and FlutterFire CLI.
 * [Add Firebase to your Flutter app](https://firebase.google.com/docs/flutter/setup)
 * [Get Started with Firebase Authentication on Flutter](https://firebase.google.com/docs/auth/flutter/start)
 
