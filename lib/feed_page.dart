@@ -1,163 +1,72 @@
-import 'dart:async';
 import 'dart:math';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:idea_board/firestore_handler.dart';
 import 'package:idea_board/idea_card.dart';
+import 'package:idea_board/feed_provider.dart';
+import 'package:idea_board/model/idea.dart';
 import 'package:provider/provider.dart';
 import 'package:tiktoklikescroller/tiktoklikescroller.dart';
-import 'package:idea_board/model/idea.dart';
 
-class FeedPage extends StatelessWidget {
+class FeedPage extends StatefulWidget {
   const FeedPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer<List<Idea>>(builder: (context, ideas, _) {
-      bool hasUnarchived = ideas.any((idea) => !idea.isArchived);
-      if (!hasUnarchived) {
-        return const Center(child: Text("Press + to create an idea"));
-      }
-      return Feed(ideas: ideas);
-    });
-  }
+  State<FeedPage> createState() => _FeedPageState();
 }
 
-class Feed extends StatefulWidget {
-  final List<Idea> ideas;
-  const Feed({required this.ideas, Key? key}) : super(key: key);
-
-  @override
-  State<Feed> createState() => _FeedState();
-}
-
-class _FeedState extends State<Feed> {
+class _FeedPageState extends State<FeedPage> {
   static const intMaxValue = 9007199254740991;
-  final Random rng = Random();
-
-  List<Idea>? ideas;
-  List<Idea>? unarchivedIdeas;
-
-  /// Ids of ideas that appear in the feed
-  final List<String> feedIds = [];
   final Controller controller = Controller();
-  late final StreamSubscription subscription;
 
   @override
   void initState() {
-    ideas = widget.ideas;
-    unarchivedIdeas = findUnarchived(ideas!);
-    initFeed();
-
-    User user = Provider.of<User>(context, listen: false);
-    subscription =
-        FirestoreHandler.ideasListStream(user.uid).listen(_updateIdeas);
     controller.addListener(_controllerListener);
+
+    // Jump to last feed position when the scroller widget has been built
+    var feedProvider = Provider.of<FeedProvider>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.jumpToPosition(feedProvider.currentPos);
+    });
 
     super.initState();
   }
 
   @override
-  void dispose() {
-    subscription.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return TikTokStyleFullPageScroller(
-        contentSize: intMaxValue,
-        controller: controller,
-        builder: (context, index) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: IdeaCard(idea: findIdea(feedIds[index])),
-            ));
-  }
-
-  List<Idea> findUnarchived(List<Idea> ideas) {
-    return ideas.where((idea) => !idea.isArchived).toList();
-  }
-
-  /// Loads the initial 3 ideas to the feed.
-  void initFeed() {
-    final lastIndex = lastRecommendationIndex();
-    final weights = calcWeights(unarchivedIdeas!, lastIndex);
-    for (var i = 0; i < 3; i++) {
-      final idea = randomChoice(unarchivedIdeas!, weights);
-      int index = unarchivedIdeas!.indexOf(idea);
-      weights[index] = 0;
-      feedIds.add(idea.id);
-      User user = Provider.of<User>(context, listen: false);
-      FirestoreHandler.setIdeaLastRecommended(
-        userId: user.uid,
-        ideaId: idea.id,
-        lastRecommended: lastIndex + 1 + i,
-      );
+    var ideas = Provider.of<List<Idea>>(context);
+    var feedProvider = Provider.of<FeedProvider>(context);
+    if (ideas.isEmpty) {
+      return const Center(child: Text("Press + to create an idea"));
+    } else if (feedProvider.feed.isEmpty) {
+      return const SizedBox();
     }
-  }
-
-  void _updateIdeas(List<Idea> newIdeas) {
-    setState(() {
-      ideas = newIdeas;
-      unarchivedIdeas = findUnarchived(ideas!);
-    });
-  }
-
-  /// Loads new ideas if the feed is starting to run out.
-  void _controllerListener(ScrollEvent event) {
-    if (event.pageNo == null || event.pageNo! < feedIds.length - 1) return;
-
-    final lastIndex = lastRecommendationIndex();
-    final weights = calcWeights(unarchivedIdeas!, lastIndex);
-    final idea = randomChoice(unarchivedIdeas!, weights);
-    setState(() => feedIds.add(idea.id));
-    User user = Provider.of<User>(context, listen: false);
-    FirestoreHandler.setIdeaLastRecommended(
-      userId: user.uid,
-      ideaId: idea.id,
-      lastRecommended: lastIndex + 1,
+    return TikTokStyleFullPageScroller(
+      contentSize: intMaxValue,
+      controller: controller,
+      builder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: IdeaCard(
+            idea: _findIdea(ideas, feedProvider.feed[index]),
+          ),
+        );
+      },
     );
   }
 
-  /// Finds the idea with the specified id.
-  Idea findIdea(String id) {
-    return ideas!.firstWhere((idea) => idea.id == id);
+  Idea _findIdea(List<Idea> ideas, String ideaId) {
+    return ideas.firstWhere((idea) => idea.id == ideaId);
   }
 
-  /// Finds the biggest value of the lastRecommended field from unarchived ideas
-  int lastRecommendationIndex() {
-    return unarchivedIdeas!.fold(
-        0, (prevValue, idea) => max(prevValue, idea.lastRecommended ?? 0));
-  }
-
-  /// Calculates weights for a distribution prioritizing ideas that have not
-  /// been recommended recently.
-  List<int> calcWeights(List<Idea> ideas, int lastIndex) {
-    int maxWeight = ideas.length * 2;
-    List<int> weights = [];
-    for (var idea in ideas) {
-      int lastRecommended = idea.lastRecommended ?? 0;
-      weights.add(min(lastIndex - lastRecommended, maxWeight));
-    }
-    return weights;
-  }
-
-  /// Chooses a random idea from the list with provided non-negative weights.
-  /// If all weights are equal, then a uniform distribution is used.
-  Idea randomChoice(List<Idea> ideas, List<int> weights) {
-    int sum = weights.fold(0, (prevValue, weight) => prevValue + weight);
-    if (sum == 0) {
-      return ideas[rng.nextInt(ideas.length)];
-    }
-    int randomValue = rng.nextInt(sum) + 1;
-    int sum2 = 0;
-    for (var i = 0; i < ideas.length; i++) {
-      sum2 += weights[i];
-      if (randomValue <= sum2) {
-        return ideas[i];
-      }
-    }
-    return ideas.last;
+  void _controllerListener(ScrollEvent event) {
+    if (event.pageNo == null || event.success != ScrollSuccess.SUCCESS) return;
+    var feedProvider = Provider.of<FeedProvider>(context, listen: false);
+    // Make sure the feed has at least 2 ideas recommended after the current one.
+    feedProvider.currentPos = event.pageNo!;
+    feedProvider.updateLastSeenPos(event.pageNo!).then((value) {
+      feedProvider.recommendIdea(
+        count: max(0, event.pageNo! - (feedProvider.feed.length - 1) + 2),
+      );
+    });
   }
 }

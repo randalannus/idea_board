@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:idea_board/feed_page.dart';
 import 'package:idea_board/legacy/ideas.dart';
 import 'package:idea_board/list_page.dart';
+import 'package:idea_board/feed_provider.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/sign_in_page.dart';
 import 'package:idea_board/themes.dart';
@@ -52,18 +53,7 @@ class MyApp extends StatelessWidget {
           builder: (context, user, _) {
             return MyPageTransitionSwitcher(
               transitionType: SharedAxisTransitionType.scaled,
-              child: user == null
-                  ? const SignInPage()
-                  : MultiProvider(
-                      providers: [
-                        Provider<User>.value(value: user),
-                        StreamProvider<List<Idea>>.value(
-                          value: FirestoreHandler.ideasListStream(user.uid),
-                          initialData: const [],
-                        )
-                      ],
-                      child: const HomePage(),
-                    ),
+              child: user == null ? const SignInPage() : const HomePage(),
             );
           },
         ),
@@ -84,6 +74,7 @@ class _HomePageState extends State<HomePage> {
   static const listPageIndex = 1;
 
   int _activePage = feedPageIndex;
+  FeedProvider? feedProvider;
 
   void _setPage(int pageNumber) {
     setState(() {
@@ -99,17 +90,33 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Ideas"),
+    User? user = Provider.of<User?>(context, listen: false);
+    if (user == null) return const SizedBox.expand();
+    return MultiProvider(
+      providers: [
+        Provider<User>.value(value: user),
+        StreamProvider<List<Idea>>.value(
+          value: FirestoreHandler.ideasListStream(user.uid),
+          initialData: const [],
+          catchError: (context, error) => [],
+        ),
+        ChangeNotifierProvider<FeedProvider>(create: (context) {
+          var ideasStream = FirestoreHandler.ideasListStream(user.uid);
+          return FeedProvider(user, ideasStream);
+        })
+      ],
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Ideas"),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _fabPressed(context),
+          child: const Icon(Icons.add),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: bottomAppBar(),
+        body: body(context),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _fabPressed(context),
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: bottomAppBar(),
-      body: body(context),
     );
   }
 
@@ -149,7 +156,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _fabPressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
     Idea idea = await FirestoreHandler.newIdea(user.uid);
-    if (!mounted) {} // avoid passing BuildContext across sync gaps
+    if (!mounted) return; // avoid passing BuildContext across sync gaps
     String? text = await Navigator.push<String>(
       context,
       MaterialPageRoute<String>(
