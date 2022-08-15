@@ -1,6 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:idea_board/firestore_handler.dart';
+import 'package:idea_board/model/user.dart';
+import 'package:idea_board/service/firestore_service.dart';
 import 'package:provider/provider.dart';
 
 class WritePage extends StatelessWidget {
@@ -60,7 +60,7 @@ class WritePage extends StatelessWidget {
   Future<void> _loadTextIfNeeded(BuildContext context) async {
     if (initialText != null || _controller.text.isNotEmpty) return;
     User user = Provider.of<User>(context, listen: false);
-    var idea = await FirestoreHandler.getIdea(user.uid, ideaId);
+    var idea = await FirestoreService.getIdea(user.uid, ideaId);
     if (idea.text.isEmpty) return;
     _controller.text = idea.text;
   }
@@ -68,7 +68,7 @@ class WritePage extends StatelessWidget {
   Future<void> _onArchivePressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
     Navigator.of(context).pop(_controller.text);
-    await FirestoreHandler.archiveIdea(user.uid, ideaId);
+    await FirestoreService.archiveIdea(user.uid, ideaId);
   }
 
   void _onBackPressed(BuildContext context) {

@@ -1,18 +1,15 @@
 import 'package:animations/animations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:idea_board/firestore_handler.dart';
-import 'package:idea_board/write_page.dart';
+import 'package:idea_board/service/firestore_service.dart';
+import 'package:idea_board/ui/pages/write_page.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:provider/provider.dart';
 
 class IdeaCard extends StatelessWidget {
   final Idea idea;
-  final EdgeInsetsGeometry padding;
 
-  const IdeaCard(
-      {required this.idea, this.padding = const EdgeInsets.all(8.0), Key? key})
-      : super(key: key);
+  const IdeaCard({required this.idea, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +26,7 @@ class IdeaCard extends StatelessWidget {
         if (text == null) {
           throw ArgumentError.notNull("text");
         }
-        await FirestoreHandler.editIdeaText(user.uid, idea.id, text);
+        await FirestoreService.editIdeaText(user.uid, idea.id, text);
       },
     );
   }
@@ -38,12 +35,12 @@ class IdeaCard extends StatelessWidget {
     return InkWell(
       onTap: openContainer,
       child: Padding(
-        padding: padding,
+        padding: const EdgeInsets.all(12.0),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 50),
           child: Text(
             idea.text,
-            textAlign: TextAlign.center,
+            textAlign: TextAlign.start,
             style: Theme.of(context).textTheme.bodyText2,
           ),
         ),

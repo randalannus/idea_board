@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:idea_board/idea_card.dart';
-import 'package:idea_board/feed_provider.dart';
+import 'package:idea_board/ui/widgets/idea_card.dart';
+import 'package:idea_board/service/feed_provider.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:provider/provider.dart';
 import 'package:tiktoklikescroller/tiktoklikescroller.dart';
