@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> {
   static const feedPageIndex = 0;
   static const listPageIndex = 1;
 
-  int _activePage = feedPageIndex;
+  int _activePage = listPageIndex;
   FeedProvider? feedProvider;
 
   void _setPage(int pageNumber) {
