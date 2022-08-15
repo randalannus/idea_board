@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
         })
       ],
       child: Scaffold(
-        appBar: topAppBar(),
+        appBar: topAppBar(context),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _fabPressed(context),
           child: const Icon(Icons.add),
@@ -68,12 +68,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  PreferredSizeWidget topAppBar() {
+  PreferredSizeWidget topAppBar(BuildContext context) {
     return AppBar(
       title: const Text("Ideas"),
       actions: [
         PopupMenuButton(
-          icon: const Icon(Icons.more_vert),
+          icon: Icon(
+            Icons.more_vert,
+            color: Theme.of(context).iconTheme.color,
+          ),
           itemBuilder: (context) => const [
             PopupMenuItem(
               onTap: AuthService.signOut,
