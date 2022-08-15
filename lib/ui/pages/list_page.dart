@@ -22,20 +22,23 @@ class ListPage extends StatelessWidget {
 
   Widget ideasListView(List<Idea> unarchivedIdeas) {
     const double sepHeight = 8;
-    return ListView.separated(
-      key: const PageStorageKey("ideasList"),
-      itemCount:
-          unarchivedIdeas.length + 2, // Add separators to the beginning and end
-      itemBuilder: (context, index) {
-        if (index == 0 || index == unarchivedIdeas.length + 1) {
-          return const SizedBox();
-        }
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: IdeaCard(idea: unarchivedIdeas[index - 1]),
-        );
-      },
-      separatorBuilder: (context, index) => const SizedBox(height: sepHeight),
+    return Scrollbar(
+      radius: const Radius.circular(20),
+      child: ListView.separated(
+        key: const PageStorageKey("ideasList"),
+        itemCount: unarchivedIdeas.length +
+            2, // Add separators to the beginning and end
+        itemBuilder: (context, index) {
+          if (index == 0 || index == unarchivedIdeas.length + 1) {
+            return const SizedBox();
+          }
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: IdeaCard(idea: unarchivedIdeas[index - 1]),
+          );
+        },
+        separatorBuilder: (context, index) => const SizedBox(height: sepHeight),
+      ),
     );
   }
 }
