@@ -6,6 +6,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:idea_board/auth_service.dart';
 import 'package:idea_board/firestore_handler.dart';
 import 'package:idea_board/legacy/db_handler.dart';
 import 'package:flutter/services.dart';
@@ -28,7 +29,7 @@ void main() async {
   await DBHandler.initializeDB();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   if (kDebugMode && fbHost.isNotEmpty) {
-    FirebaseAuth.instance.useAuthEmulator(fbHost, 9099);
+    AuthService.useEmulator(fbHost, 9099);
     FirebaseFirestore.instance.useFirestoreEmulator(fbHost, 8080);
   }
   // Force device orientation to vertical
@@ -45,8 +46,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => IdeasProvider()),
         StreamProvider<User?>.value(
-          value: FirebaseAuth.instance.userChanges(),
-          initialData: FirebaseAuth.instance.currentUser,
+          value: AuthService.userChanges(),
+          initialData: AuthService.currentUser,
         ),
       ],
       child: MaterialApp(
@@ -124,9 +125,7 @@ class _HomePageState extends State<HomePage> {
         })
       ],
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Ideas"),
-        ),
+        appBar: topAppBar(),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _fabPressed(context),
           child: const Icon(Icons.add),
@@ -135,6 +134,23 @@ class _HomePageState extends State<HomePage> {
         bottomNavigationBar: bottomAppBar(),
         body: body(context),
       ),
+    );
+  }
+
+  PreferredSizeWidget topAppBar() {
+    return AppBar(
+      title: const Text("Ideas"),
+      actions: [
+        PopupMenuButton(
+          icon: const Icon(Icons.more_vert),
+          itemBuilder: (context) => const [
+            PopupMenuItem(
+              onTap: AuthService.signOut,
+              child: Text("Sign out"),
+            )
+          ],
+        )
+      ],
     );
   }
 
