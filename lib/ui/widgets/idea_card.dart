@@ -8,11 +8,8 @@ import 'package:provider/provider.dart';
 
 class IdeaCard extends StatelessWidget {
   final Idea idea;
-  final EdgeInsetsGeometry padding;
 
-  const IdeaCard(
-      {required this.idea, this.padding = const EdgeInsets.all(8.0), Key? key})
-      : super(key: key);
+  const IdeaCard({required this.idea, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,12 +35,12 @@ class IdeaCard extends StatelessWidget {
     return InkWell(
       onTap: openContainer,
       child: Padding(
-        padding: padding,
+        padding: const EdgeInsets.all(12.0),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 50),
           child: Text(
             idea.text,
-            textAlign: TextAlign.center,
+            textAlign: TextAlign.start,
             style: Theme.of(context).textTheme.bodyText2,
           ),
         ),
