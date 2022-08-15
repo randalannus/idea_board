@@ -60,7 +60,8 @@ class FirestoreHandler {
                 (docSnapshot) => Idea.fromFirestore(docSnapshot.data()),
               )
               .toList(),
-        );
+        )
+        .handleError((_) {});
   }
 
   /// Sets the lastRecommended field of an idea.
