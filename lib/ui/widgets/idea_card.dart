@@ -1,8 +1,8 @@
 import 'package:animations/animations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:idea_board/firestore_handler.dart';
-import 'package:idea_board/write_page.dart';
+import 'package:idea_board/service/firestore_service.dart';
+import 'package:idea_board/ui/pages/write_page.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:provider/provider.dart';
 
@@ -29,7 +29,7 @@ class IdeaCard extends StatelessWidget {
         if (text == null) {
           throw ArgumentError.notNull("text");
         }
-        await FirestoreHandler.editIdeaText(user.uid, idea.id, text);
+        await FirestoreService.editIdeaText(user.uid, idea.id, text);
       },
     );
   }

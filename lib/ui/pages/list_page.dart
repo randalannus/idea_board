@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:idea_board/idea_card.dart';
+import 'package:idea_board/ui/widgets/idea_card.dart';
 import 'package:provider/provider.dart';
 import 'package:idea_board/model/idea.dart';
 
