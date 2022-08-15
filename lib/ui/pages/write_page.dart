@@ -42,7 +42,7 @@ class WritePage extends StatelessWidget {
             child: TextField(
               maxLines: null,
               expands: true,
-              keyboardType: TextInputType.text,
+              keyboardType: TextInputType.multiline,
               textCapitalization: TextCapitalization.sentences,
               autofocus: initialText == null || initialText!.isEmpty,
               controller: _controller,
