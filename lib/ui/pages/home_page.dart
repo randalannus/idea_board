@@ -1,8 +1,8 @@
 import 'package:animations/animations.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:idea_board/legacy/ideas.dart';
 import 'package:idea_board/model/idea.dart';
+import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/auth_service.dart';
 import 'package:idea_board/service/feed_provider.dart';
 import 'package:idea_board/service/firestore_service.dart';

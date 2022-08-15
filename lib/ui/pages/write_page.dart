@@ -1,5 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/firestore_service.dart';
 import 'package:provider/provider.dart';
 

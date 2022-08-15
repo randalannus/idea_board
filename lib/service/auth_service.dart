@@ -1,10 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:idea_board/model/user.dart';
 
 class AuthService {
   static final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  static fb_auth.FirebaseAuth get _instance => fb_auth.FirebaseAuth.instance;
 
   static Future<SignInResult> signInWithGoogle(BuildContext context) async {
     // Trigger the authentication flow
@@ -28,41 +31,47 @@ class AuthService {
 
     // Obtain the auth details from the request
     GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    OAuthCredential credential = GoogleAuthProvider.credential(
+    fb_auth.OAuthCredential credential = fb_auth.GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
-    var userCredential =
-        await FirebaseAuth.instance.signInWithCredential(credential);
-    return SignInResult.fromUserCredential(userCredential);
+    var userCredential = await _instance.signInWithCredential(credential);
+    return SignInResult.fromUser(User.fromFirebaseAuth(userCredential.user!));
   }
 
   static Stream<User?> userChanges() {
-    return FirebaseAuth.instance.userChanges();
+    return _instance.userChanges().map((fbUser) {
+      if (fbUser == null) return null;
+      return User.fromFirebaseAuth(fbUser);
+    });
   }
 
   static Future<void> signOut() async {
     await _googleSignIn.signOut();
-    await FirebaseAuth.instance.signOut();
+    await _instance.signOut();
   }
 
-  static User? get currentUser => FirebaseAuth.instance.currentUser;
+  static User? get currentUser {
+    var fbUser = _instance.currentUser;
+    if (fbUser == null) return null;
+    return User.fromFirebaseAuth(fbUser);
+  }
 
   static Future<void> useEmulator(String host, int port) async {
-    await FirebaseAuth.instance.useAuthEmulator(host, 9099);
+    await _instance.useAuthEmulator(host, 9099);
     await signOut();
   }
 }
 
 class SignInResult {
-  final UserCredential? userCredential;
+  final User? user;
   final SignInError? error;
 
-  SignInResult.fromUserCredential(this.userCredential) : error = null;
-  SignInResult.fromError(this.error) : userCredential = null;
+  SignInResult.fromUser(this.user) : error = null;
+  SignInResult.fromError(this.error) : user = null;
 
-  bool get isSuccessful => userCredential != null;
+  bool get isSuccessful => user != null;
 }
 
 enum SignInError { failed, cancelled, noConnection }
