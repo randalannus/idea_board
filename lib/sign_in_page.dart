@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_signin_button/button_list.dart';
 import 'package:flutter_signin_button/button_view.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:idea_board/firebase_options.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({Key? key}) : super(key: key);
@@ -45,7 +46,9 @@ class _SignInPageState extends State<SignInPage> {
     GoogleSignInAccount? googleUser;
     String? errorMessage;
     try {
-      googleUser = await GoogleSignIn().signIn();
+      // Required for iOS, null for android
+      String? clientId = DefaultFirebaseOptions.currentPlatform.iosClientId;
+      googleUser = await GoogleSignIn(clientId: clientId).signIn();
     } on PlatformException catch (e) {
       if (e.code == GoogleSignIn.kSignInFailedError) {
         errorMessage = "Sign in failed";
