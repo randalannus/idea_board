@@ -1,10 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_signin_button/button_list.dart';
 import 'package:flutter_signin_button/button_view.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:idea_board/firebase_options.dart';
+import 'package:idea_board/service/auth_service.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({Key? key}) : super(key: key);
@@ -33,7 +30,7 @@ class _SignInPageState extends State<SignInPage> {
             ),
             SignInButton(
               Buttons.Google,
-              onPressed: () => signInWithGoogle(context),
+              onPressed: _onGoogleSignInPressed,
             )
           ],
         ),
@@ -41,38 +38,22 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
-  Future<UserCredential?> signInWithGoogle(BuildContext context) async {
-    // Trigger the authentication flow
-    GoogleSignInAccount? googleUser;
+  void _onGoogleSignInPressed() async {
+    var result = await AuthService.signInWithGoogle(context);
+    if (result.isSuccessful) return;
+
     String? errorMessage;
-    try {
-      // Required for iOS, null for android
-      String? clientId = DefaultFirebaseOptions.currentPlatform.iosClientId;
-      googleUser = await GoogleSignIn(clientId: clientId).signIn();
-    } on PlatformException catch (e) {
-      if (e.code == GoogleSignIn.kSignInFailedError) {
-        errorMessage = "Sign in failed";
-      } else if (e.code == GoogleSignIn.kNetworkError) {
-        errorMessage = "No internet connection";
-      } else {
-        rethrow;
-      }
+    if (result.error! == SignInError.cancelled) {
+      errorMessage = "Sign in cancelled";
+    } else if (result.error! == SignInError.noConnection) {
+      errorMessage = "No internet connection";
+    } else if (result.error! == SignInError.failed) {
+      errorMessage = "Sign in failed";
     }
 
-    // If authentication is fails or is aborted
-    if (googleUser == null) {
-      if (mounted) showSnackbar(context, errorMessage ?? "Sign in cancelled");
-      return null;
+    if (mounted && errorMessage != null) {
+      showSnackbar(context, errorMessage);
     }
-
-    // Obtain the auth details from the request
-    GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    OAuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
   void showSnackbar(BuildContext context, String message) {

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:uuid/uuid.dart';
 
-class FirestoreHandler {
+class FirestoreService {
   static const cUsers = "users";
   static const cIdeas = "ideas";
 
@@ -60,7 +60,8 @@ class FirestoreHandler {
                 (docSnapshot) => Idea.fromFirestore(docSnapshot.data()),
               )
               .toList(),
-        );
+        )
+        .handleError((_) {});
   }
 
   /// Sets the lastRecommended field of an idea.
