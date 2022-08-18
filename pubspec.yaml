@@ -50,7 +50,8 @@ dependencies:
 
 flutter_icons:
   image_path: "assets/icon.png"
-  android: true
+  # Android icons are generated with https://romannurik.github.io/AndroidAssetStudio/icons-launcher.html
+  android: false
   ios: true
 
 dev_dependencies:

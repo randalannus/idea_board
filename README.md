@@ -23,4 +23,5 @@ debug builds will use the emulator. To find your device ip run `ipconfig` on win
 Add `"args": ["--dart-define=FIREBASE_EMULATOR_HOST=<your-emulator-device-ip>"]` to your VS Code launch config to
 provide the argument.
 
-
+# Running on iOS
+Execute `pod update` in the ios folder before compiling for iOS to speed up the compiling process.
