@@ -47,6 +47,7 @@ dependencies:
   google_sign_in: ^5.4.0
   flutter_signin_button: ^2.0.0
   connectivity_plus: ^2.3.6+1
+  flutter_quill: ^5.4.1
 
 flutter_icons:
   image_path: "assets/icon.png"

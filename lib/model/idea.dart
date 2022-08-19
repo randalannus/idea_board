@@ -2,20 +2,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Idea {
   static const fId = "id";
-  static const fText = "text";
+  static const fPlainText = "text";
+  static const fRichText = "richText";
   static const fCreatedAt = "createdAt";
   static const fIsArchived = "isArchived";
   static const fLastRecommended = "lastRecommended";
 
   final String id;
-  final String text;
+  final String plainText;
+  final String? richText;
   final DateTime createdAt;
   final bool isArchived;
   final int? lastRecommended;
 
   const Idea({
     required this.id,
-    required this.text,
+    required this.plainText,
+    required this.richText,
     required this.createdAt,
     required this.isArchived,
     required this.lastRecommended,
@@ -24,7 +27,8 @@ class Idea {
   Map<String, dynamic> toFirestore() {
     return {
       fId: id,
-      fText: text,
+      fPlainText: plainText,
+      fRichText: richText,
       fCreatedAt: createdAt,
       fIsArchived: isArchived,
       fLastRecommended: lastRecommended,
@@ -33,7 +37,8 @@ class Idea {
 
   Idea.fromFirestore(Map<String, dynamic> map)
       : id = map[fId],
-        text = map[fText],
+        plainText = map[fPlainText],
+        richText = map[fRichText],
         createdAt = (map[fCreatedAt] as Timestamp).toDate(),
         isArchived = map[fIsArchived],
         lastRecommended = map[fLastRecommended];
@@ -41,7 +46,8 @@ class Idea {
   @Deprecated("Only used for parsing to and from SQLite")
   Idea.fromMap(Map<String, dynamic> res)
       : id = res[fId].toString(),
-        text = res[fText],
+        plainText = res[fPlainText],
+        richText = null,
         createdAt = DateTime.fromMillisecondsSinceEpoch(res[fCreatedAt]),
         isArchived = res[fIsArchived] == 1,
         lastRecommended = res[fLastRecommended];
@@ -50,7 +56,7 @@ class Idea {
   Map<String, Object?> toMap() {
     return {
       fId: int.parse(id),
-      fText: text,
+      fPlainText: plainText,
       fCreatedAt: createdAt.millisecondsSinceEpoch,
       fIsArchived: isArchived ? 1 : 0,
       fLastRecommended: lastRecommended,

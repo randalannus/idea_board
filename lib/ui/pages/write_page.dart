@@ -1,77 +1,156 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' hide Text;
 import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/firestore_service.dart';
 import 'package:provider/provider.dart';
 
-class WritePage extends StatelessWidget {
-  final _controller = TextEditingController();
+class WritePage extends StatefulWidget {
   final String ideaId;
-  final String? initialText;
+  final Document initialDocument;
 
-  WritePage({required this.ideaId, this.initialText, Key? key})
-      : super(key: key) {
-    if (initialText != null) {
-      _controller.text = initialText!;
+  WritePage({required this.ideaId, required this.initialDocument, Key? key}) : super(key: key) {}
+
+  @override
+  State<WritePage> createState() => _WritePageState();
+}
+
+class _WritePageState extends State<WritePage> {
+  QuillController? _controller;
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    if (widget.initialDocument != null) {
+      _controller = QuillController(document: widget.initialDocument, selection: const TextSelection.collapsed(offset: 0));
     }
+    _loadTextIfNeeded(context);
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    _loadTextIfNeeded(context);
     return WillPopScope(
       onWillPop: () {
         _onBackPressed(context);
         return Future.value(false);
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Edit Idea"),
-          backgroundColor: Theme.of(context).cardColor,
-          iconTheme: Theme.of(context).iconTheme,
-          actions: [
-            IconButton(
-                onPressed: () => _onArchivePressed(context),
-                icon: const Icon(Icons.delete))
-          ],
-        ),
-        body: Center(
-            child: SizedBox.expand(
-          child: Container(
-            color: Theme.of(context).cardColor,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            child: TextField(
-              maxLines: null,
-              expands: true,
-              keyboardType: TextInputType.multiline,
-              textCapitalization: TextCapitalization.sentences,
-              autofocus: initialText == null || initialText!.isEmpty,
-              controller: _controller,
-              focusNode: FocusNode(),
-              style: Theme.of(context).textTheme.bodyText1,
-              decoration: const InputDecoration(border: InputBorder.none),
-              cursorColor: Colors.black,
-            ),
+          appBar: AppBar(
+            title: const Text("Edit Idea"),
+            backgroundColor: Theme.of(context).cardColor,
+            iconTheme: Theme.of(context).iconTheme,
+            actions: [IconButton(onPressed: () => _onArchivePressed(context), icon: const Icon(Icons.delete))],
           ),
-        )),
-      ),
+          body: SafeArea(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Expanded(
+                  flex: 15,
+                  child: Container(
+                    color: Colors.amber,
+                    padding: const EdgeInsets.all(4),
+                    child: Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.all(16),
+                      child: _buildRichTextEditor(context),
+                    ),
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(margin: EdgeInsets.zero, color: Colors.grey.shade200, child: _buildEditorToolbar(context)),
+                  ],
+                )
+              ],
+            ),
+          )),
     );
   }
 
+  Widget _buildEditorToolbar(BuildContext context) {
+    var toolbar = QuillToolbar.basic(
+      controller: _controller!,
+      showAlignmentButtons: false,
+      showFontFamily: false,
+      showFontSize: false,
+      showHeaderStyle: false,
+      showVideoButton: false,
+      showSearchButton: false,
+      showColorButton: false,
+      showCodeBlock: false,
+      showInlineCode: false,
+      showListCheck: false,
+      showLink: false,
+      showItalicButton: false,
+      showUnderLineButton: false,
+      showUndo: false,
+      showImageButton: false,
+      showIndent: true,
+      showQuote: false,
+      showClearFormat: false,
+      showBackgroundColorButton: false,
+      showStrikeThrough: false,
+      showRedo: false,
+      toolbarIconSize: 24,
+      toolbarSectionSpacing: 2,
+      showDividers: false,
+    );
+
+    return toolbar;
+  }
+
+  Widget _buildRichTextEditor(BuildContext context) {
+    var quillEditor = QuillEditor(
+      controller: _controller!,
+      scrollController: ScrollController(),
+      scrollable: true,
+      focusNode: _focusNode,
+      autoFocus: false,
+      readOnly: false,
+      placeholder: 'Add content',
+      expands: false,
+      padding: EdgeInsets.zero,
+    );
+
+    return quillEditor;
+  }
+
   Future<void> _loadTextIfNeeded(BuildContext context) async {
-    if (initialText != null || _controller.text.isNotEmpty) return;
+    Document? parsedDocument;
+    if (_controller != null && _controller!.getPlainText().isNotEmpty) return;
     User user = Provider.of<User>(context, listen: false);
-    var idea = await FirestoreService.getIdea(user.uid, ideaId);
-    if (idea.text.isEmpty) return;
-    _controller.text = idea.text;
+    var idea = await FirestoreService.getIdea(user.uid, widget.ideaId);
+    if (idea.richText != null && idea.richText!.isNotEmpty) {
+      List<dynamic>? decodedJson;
+      try {
+        decodedJson = jsonDecode(idea.richText!);
+      } catch (e) {
+        print(e);
+      }
+      if (decodedJson != null) {
+        parsedDocument = Document.fromJson(decodedJson);
+      }
+    } else if (idea.plainText.isNotEmpty) {
+      parsedDocument = Document()..insert(0, idea.plainText);
+    }
+    if (parsedDocument != null) {
+      setState(() {
+        _controller = QuillController(document: parsedDocument!, selection: const TextSelection.collapsed(offset: 0));
+      });
+    }
   }
 
   Future<void> _onArchivePressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
-    Navigator.of(context).pop(_controller.text);
-    await FirestoreService.archiveIdea(user.uid, ideaId);
+    Navigator.of(context).pop(_controller!.document);
+    await FirestoreService.archiveIdea(user.uid, widget.ideaId);
   }
 
   void _onBackPressed(BuildContext context) {
-    Navigator.of(context).pop(_controller.text);
+    Navigator.of(context).pop(_controller!.document);
   }
 }

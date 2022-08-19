@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' hide Text;
 import 'package:idea_board/legacy/ideas.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/model/user.dart';
@@ -124,15 +127,16 @@ class _HomePageState extends State<HomePage> {
   Future<void> _fabPressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
     Idea idea = await FirestoreService.newIdea(user.uid);
+
     if (!mounted) return; // avoid passing BuildContext across sync gaps
-    String? text = await Navigator.push<String>(
+    Document? textDocument = await Navigator.push<Document>(
       context,
-      MaterialPageRoute<String>(
-        builder: (context) => WritePage(ideaId: idea.id),
+      MaterialPageRoute<Document>(
+        builder: (context) => WritePage(initialDocument: Document(), ideaId: idea.id),
       ),
     );
-    if (text == null) throw ArgumentError.notNull("text");
-    await FirestoreService.editIdeaText(user.uid, idea.id, text);
+    if (textDocument == null) throw ArgumentError.notNull("text");
+    await FirestoreService.editIdeaText(user.uid, idea.id, textDocument.toPlainText(), jsonEncode(textDocument.toDelta().toJson()));
   }
 
   /// Script for copying all ideas from the local SQL databse to Firestore.
@@ -146,7 +150,7 @@ class _HomePageState extends State<HomePage> {
     var ideas = await provider.listIdeas();
     for (var idea in ideas) {
       var newIdea = await FirestoreService.newIdea(user.uid);
-      await FirestoreService.editIdeaText(user.uid, newIdea.id, idea.text);
+      await FirestoreService.editIdeaText(user.uid, newIdea.id, idea.plainText, null);
       if (idea.isArchived) {
         await FirestoreService.archiveIdea(user.uid, newIdea.id);
       }
