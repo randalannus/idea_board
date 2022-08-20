@@ -1,23 +1,38 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' hide Text;
+import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/firestore_service.dart';
+import 'package:tuple/tuple.dart';
 import 'package:provider/provider.dart';
 
-class WritePage extends StatelessWidget {
-  final _controller = TextEditingController();
+class WritePage extends StatefulWidget {
   final String ideaId;
-  final String? initialText;
+  final Idea initialIdea;
 
-  WritePage({required this.ideaId, this.initialText, Key? key})
-      : super(key: key) {
-    if (initialText != null) {
-      _controller.text = initialText!;
-    }
+  const WritePage({
+    required this.ideaId,
+    required this.initialIdea,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<WritePage> createState() => _WritePageState();
+}
+
+class _WritePageState extends State<WritePage> {
+  late final QuillController _controller;
+
+  @override
+  void initState() {
+    _controller = createQuillController(widget.initialIdea);
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    _loadTextIfNeeded(context);
     return WillPopScope(
       onWillPop: () {
         _onBackPressed(context);
@@ -30,48 +45,116 @@ class WritePage extends StatelessWidget {
           iconTheme: Theme.of(context).iconTheme,
           actions: [
             IconButton(
-                onPressed: () => _onArchivePressed(context),
-                icon: const Icon(Icons.delete))
+              onPressed: () => _onArchivePressed(context),
+              icon: const Icon(Icons.delete),
+            )
           ],
         ),
-        body: Center(
-            child: SizedBox.expand(
-          child: Container(
-            color: Theme.of(context).cardColor,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            child: TextField(
-              maxLines: null,
-              expands: true,
-              keyboardType: TextInputType.multiline,
-              textCapitalization: TextCapitalization.sentences,
-              autofocus: initialText == null || initialText!.isEmpty,
-              controller: _controller,
-              focusNode: FocusNode(),
-              style: Theme.of(context).textTheme.bodyText1,
-              decoration: const InputDecoration(border: InputBorder.none),
-              cursorColor: Colors.black,
-            ),
+        body: SafeArea(
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  color: Theme.of(context).cardColor,
+                  child: _buildRichTextEditor(context),
+                ),
+              ),
+              _buildEditorToolbar(context)
+            ],
           ),
-        )),
+        ),
       ),
     );
   }
 
-  Future<void> _loadTextIfNeeded(BuildContext context) async {
-    if (initialText != null || _controller.text.isNotEmpty) return;
-    User user = Provider.of<User>(context, listen: false);
-    var idea = await FirestoreService.getIdea(user.uid, ideaId);
-    if (idea.text.isEmpty) return;
-    _controller.text = idea.text;
+  Widget _buildEditorToolbar(BuildContext context) {
+    var theme = Theme.of(context);
+    var toolbar = QuillToolbar.basic(
+      controller: _controller,
+      showAlignmentButtons: false,
+      showFontFamily: false,
+      showFontSize: false,
+      showHeaderStyle: false,
+      showVideoButton: false,
+      showSearchButton: false,
+      showColorButton: false,
+      showCodeBlock: false,
+      showInlineCode: false,
+      showListCheck: false,
+      showLink: false,
+      showItalicButton: false,
+      showUnderLineButton: false,
+      showUndo: false,
+      showImageButton: false,
+      showIndent: true,
+      showQuote: false,
+      showClearFormat: false,
+      showBackgroundColorButton: false,
+      showStrikeThrough: false,
+      showRedo: false,
+      toolbarIconSize: 24,
+      toolbarSectionSpacing: 2,
+      showDividers: false,
+      iconTheme: QuillIconTheme(
+        iconSelectedColor: theme.canvasColor,
+        iconSelectedFillColor: theme.iconTheme.color,
+        iconUnselectedColor: theme.iconTheme.color,
+        iconUnselectedFillColor: Colors.transparent,
+      ),
+    );
+
+    return toolbar;
+  }
+
+  Widget _buildRichTextEditor(BuildContext context) {
+    var quillEditor = QuillEditor(
+      controller: _controller,
+      scrollController: ScrollController(),
+      scrollable: true,
+      focusNode: FocusNode(),
+      autoFocus: false,
+      readOnly: false,
+      placeholder: 'Write here...',
+      expands: false,
+      padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+      textCapitalization: TextCapitalization.sentences,
+      customStyles: DefaultStyles(
+        paragraph: DefaultTextBlockStyle(
+          Theme.of(context).textTheme.bodyText1!,
+          const Tuple2(0, 0),
+          const Tuple2(0, 0),
+          null,
+        ),
+      ),
+    );
+
+    return quillEditor;
   }
 
   Future<void> _onArchivePressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
-    Navigator.of(context).pop(_controller.text);
-    await FirestoreService.archiveIdea(user.uid, ideaId);
+    Navigator.of(context).pop(_controller.document);
+    await FirestoreService.archiveIdea(user.uid, widget.ideaId);
   }
 
   void _onBackPressed(BuildContext context) {
-    Navigator.of(context).pop(_controller.text);
+    Navigator.of(context).pop(_controller.document);
   }
+}
+
+QuillController createQuillController(Idea idea) {
+  Document parsedDocument;
+  if (idea.richText != null && idea.richText!.isNotEmpty) {
+    List<dynamic>? decodedJson = jsonDecode(idea.richText!);
+    if (decodedJson == null) throw "Invalid json";
+    parsedDocument = Document.fromJson(decodedJson);
+  } else if (idea.plainText.isNotEmpty) {
+    parsedDocument = Document()..insert(0, idea.plainText);
+  } else {
+    parsedDocument = Document();
+  }
+  return QuillController(
+    document: parsedDocument,
+    selection: const TextSelection.collapsed(offset: 0),
+  );
 }
