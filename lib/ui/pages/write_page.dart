@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -9,10 +10,12 @@ import 'package:tuple/tuple.dart';
 import 'package:provider/provider.dart';
 
 class WritePage extends StatefulWidget {
+  final String userId;
   final String ideaId;
   final Idea initialIdea;
 
   const WritePage({
+    required this.userId,
     required this.ideaId,
     required this.initialIdea,
     Key? key,
@@ -24,19 +27,29 @@ class WritePage extends StatefulWidget {
 
 class _WritePageState extends State<WritePage> {
   late final QuillController _controller;
+  late final Saver _saver;
+  late final StreamSubscription _changeSub;
 
   @override
   void initState() {
     _controller = createQuillController(widget.initialIdea);
+    _saver = Saver(widget.userId, widget.ideaId, _controller);
+    _changeSub = _controller.document.changes.listen((_) => _saver.notify());
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _changeSub.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () {
-        _onBackPressed(context);
-        return Future.value(false);
+      onWillPop: () async {
+        _saver.save();
+        return true;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -133,12 +146,8 @@ class _WritePageState extends State<WritePage> {
 
   Future<void> _onArchivePressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
-    Navigator.of(context).pop(_controller.document);
+    Navigator.of(context).pop();
     await FirestoreService.archiveIdea(user.uid, widget.ideaId);
-  }
-
-  void _onBackPressed(BuildContext context) {
-    Navigator.of(context).pop(_controller.document);
   }
 }
 
@@ -157,4 +166,38 @@ QuillController createQuillController(Idea idea) {
     document: parsedDocument,
     selection: const TextSelection.collapsed(offset: 0),
   );
+}
+
+/// A class for periodically saving text from Quill to the database.
+///
+/// Call [Saver.notify] when there are changes to the idea's text.
+/// [Saver] will wait and accumulate changes for [Saver.delay] and then save.
+/// Calling [Saver.notify] when it is already waiting has no effect.
+///
+/// Call [Saver.save] to save immediately and cancel waiting for changes.
+class Saver {
+  final String userId;
+  final String ideaId;
+  final QuillController controller;
+  static const delay = Duration(seconds: 2);
+
+  Timer? _timer;
+
+  Saver(this.userId, this.ideaId, this.controller);
+
+  void notify() {
+    if (_timer == null || !_timer!.isActive) {
+      _timer = Timer(delay, save);
+    }
+  }
+
+  Future<void> save() {
+    _timer?.cancel();
+    return FirestoreService.editIdeaText(
+      userId,
+      ideaId,
+      controller.document.toPlainText(),
+      jsonEncode(controller.document.toDelta().toJson()),
+    );
+  }
 }

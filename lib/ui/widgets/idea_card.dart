@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:idea_board/model/user.dart';
-import 'package:idea_board/service/firestore_service.dart';
 import 'package:idea_board/ui/pages/write_page.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:provider/provider.dart';
@@ -24,18 +21,6 @@ class IdeaCard extends StatelessWidget {
       closedColor: Theme.of(context).cardColor,
       closedBuilder: closedBuilder,
       openBuilder: openBuilder,
-      onClosed: (quill.Document? textDocument) async {
-        if (textDocument == null) {
-          throw ArgumentError.notNull("text");
-        }
-        User user = Provider.of<User>(context, listen: false);
-        await FirestoreService.editIdeaText(
-          user.uid,
-          idea.id,
-          textDocument.toPlainText(),
-          jsonEncode(textDocument.toDelta().toJson()),
-        );
-      },
     );
   }
 
@@ -72,6 +57,11 @@ class IdeaCard extends StatelessWidget {
   }
 
   Widget openBuilder(BuildContext context, VoidCallback openContainer) {
-    return WritePage(ideaId: idea.id, initialIdea: idea);
+    User user = Provider.of<User>(context, listen: false);
+    return WritePage(
+      userId: user.uid,
+      ideaId: idea.id,
+      initialIdea: idea,
+    );
   }
 }

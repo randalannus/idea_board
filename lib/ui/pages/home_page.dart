@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' hide Text;
 import 'package:idea_board/legacy/ideas.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/model/user.dart';
@@ -129,18 +126,15 @@ class _HomePageState extends State<HomePage> {
     Idea idea = await FirestoreService.newIdea(user.uid);
 
     if (!mounted) return; // avoid passing BuildContext across sync gaps
-    Document? textDocument = await Navigator.push<Document>(
+    await Navigator.push(
       context,
-      MaterialPageRoute<Document>(
-        builder: (context) => WritePage(ideaId: idea.id, initialIdea: idea),
+      MaterialPageRoute(
+        builder: (context) => WritePage(
+          userId: user.uid,
+          ideaId: idea.id,
+          initialIdea: idea,
+        ),
       ),
-    );
-    if (textDocument == null) throw ArgumentError.notNull("textDocument");
-    await FirestoreService.editIdeaText(
-      user.uid,
-      idea.id,
-      textDocument.toPlainText(),
-      jsonEncode(textDocument.toDelta().toJson()),
     );
   }
 
