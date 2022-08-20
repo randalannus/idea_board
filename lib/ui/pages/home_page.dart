@@ -132,11 +132,16 @@ class _HomePageState extends State<HomePage> {
     Document? textDocument = await Navigator.push<Document>(
       context,
       MaterialPageRoute<Document>(
-        builder: (context) => WritePage(initialDocument: Document(), ideaId: idea.id),
+        builder: (context) => WritePage(ideaId: idea.id, initialIdea: idea),
       ),
     );
-    if (textDocument == null) throw ArgumentError.notNull("text");
-    await FirestoreService.editIdeaText(user.uid, idea.id, textDocument.toPlainText(), jsonEncode(textDocument.toDelta().toJson()));
+    if (textDocument == null) throw ArgumentError.notNull("textDocument");
+    await FirestoreService.editIdeaText(
+      user.uid,
+      idea.id,
+      textDocument.toPlainText(),
+      jsonEncode(textDocument.toDelta().toJson()),
+    );
   }
 
   /// Script for copying all ideas from the local SQL databse to Firestore.
@@ -150,7 +155,8 @@ class _HomePageState extends State<HomePage> {
     var ideas = await provider.listIdeas();
     for (var idea in ideas) {
       var newIdea = await FirestoreService.newIdea(user.uid);
-      await FirestoreService.editIdeaText(user.uid, newIdea.id, idea.plainText, null);
+      await FirestoreService.editIdeaText(
+          user.uid, newIdea.id, idea.plainText, null);
       if (idea.isArchived) {
         await FirestoreService.archiveIdea(user.uid, newIdea.id);
       }

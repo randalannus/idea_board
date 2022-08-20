@@ -2,17 +2,18 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Text;
+import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/firestore_service.dart';
 import 'package:provider/provider.dart';
 
 class WritePage extends StatefulWidget {
   final String ideaId;
-  final Document initialDocument;
+  final Idea initialIdea;
 
   const WritePage({
     required this.ideaId,
-    required this.initialDocument,
+    required this.initialIdea,
     Key? key,
   }) : super(key: key);
 
@@ -21,16 +22,11 @@ class WritePage extends StatefulWidget {
 }
 
 class _WritePageState extends State<WritePage> {
-  late QuillController _controller;
-  final FocusNode _focusNode = FocusNode();
+  late final QuillController _controller;
 
   @override
   void initState() {
-    _controller = QuillController(
-      document: widget.initialDocument,
-      selection: const TextSelection.collapsed(offset: 0),
-    );
-    _loadTextIfNeeded(context);
+    _controller = createQuillController(widget.initialIdea);
     super.initState();
   }
 
@@ -107,7 +103,7 @@ class _WritePageState extends State<WritePage> {
       controller: _controller,
       scrollController: ScrollController(),
       scrollable: true,
-      focusNode: _focusNode,
+      focusNode: FocusNode(),
       autoFocus: false,
       readOnly: false,
       placeholder: 'Write here...',
@@ -119,34 +115,6 @@ class _WritePageState extends State<WritePage> {
     return quillEditor;
   }
 
-  Future<void> _loadTextIfNeeded(BuildContext context) async {
-    Document? parsedDocument;
-    if (_controller.getPlainText().isNotEmpty) return;
-    User user = Provider.of<User>(context, listen: false);
-    var idea = await FirestoreService.getIdea(user.uid, widget.ideaId);
-    if (idea.richText != null && idea.richText!.isNotEmpty) {
-      List<dynamic>? decodedJson;
-      try {
-        decodedJson = jsonDecode(idea.richText!);
-      } catch (e) {
-        print(e);
-      }
-      if (decodedJson != null) {
-        parsedDocument = Document.fromJson(decodedJson);
-      }
-    } else if (idea.plainText.isNotEmpty) {
-      parsedDocument = Document()..insert(0, idea.plainText);
-    }
-    if (parsedDocument != null) {
-      setState(() {
-        _controller = QuillController(
-          document: parsedDocument!,
-          selection: const TextSelection.collapsed(offset: 0),
-        );
-      });
-    }
-  }
-
   Future<void> _onArchivePressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
     Navigator.of(context).pop(_controller.document);
@@ -156,4 +124,21 @@ class _WritePageState extends State<WritePage> {
   void _onBackPressed(BuildContext context) {
     Navigator.of(context).pop(_controller.document);
   }
+}
+
+QuillController createQuillController(Idea idea) {
+  Document parsedDocument;
+  if (idea.richText != null && idea.richText!.isNotEmpty) {
+    List<dynamic>? decodedJson = jsonDecode(idea.richText!);
+    if (decodedJson == null) throw "Invalid json";
+    parsedDocument = Document.fromJson(decodedJson);
+  } else if (idea.plainText.isNotEmpty) {
+    parsedDocument = Document()..insert(0, idea.plainText);
+  } else {
+    parsedDocument = Document();
+  }
+  return QuillController(
+    document: parsedDocument,
+    selection: const TextSelection.collapsed(offset: 0),
+  );
 }

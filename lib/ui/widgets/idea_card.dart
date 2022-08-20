@@ -13,8 +13,6 @@ class IdeaCard extends StatelessWidget {
   final Idea idea;
   const IdeaCard({required this.idea, Key? key}) : super(key: key);
 
-
-
   @override
   Widget build(BuildContext context) {
     return OpenContainer(
@@ -30,56 +28,41 @@ class IdeaCard extends StatelessWidget {
           throw ArgumentError.notNull("text");
         }
         User user = Provider.of<User>(context, listen: false);
-        await FirestoreService.editIdeaText(user.uid, idea.id, textDocument.toPlainText(), jsonEncode(textDocument.toDelta().toJson()));
+        await FirestoreService.editIdeaText(
+          user.uid,
+          idea.id,
+          textDocument.toPlainText(),
+          jsonEncode(textDocument.toDelta().toJson()),
+        );
       },
     );
   }
 
   Widget closedBuilder(BuildContext context, VoidCallback openContainer) {
-    
     return InkWell(
       onTap: openContainer,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 50),
-            child: AbsorbPointer(
-              child: quill.QuillEditor(
-                  controller: _createController(idea),
-                  scrollController: ScrollController(),
-                  scrollable: false,
-                  focusNode: FocusNode(),
-                  autoFocus: false,
-                  readOnly: true,
-                  expands: false,
-                  padding: EdgeInsets.zero),
-            )
+          child: AbsorbPointer(
+            child: quill.QuillEditor(
+              controller: createQuillController(idea),
+              scrollController: ScrollController(),
+              scrollable: false,
+              focusNode: FocusNode(),
+              autoFocus: false,
+              readOnly: true,
+              expands: false,
+              padding: EdgeInsets.zero,
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget openBuilder(BuildContext context, VoidCallback openContainer) {
-    return WritePage(ideaId: idea.id, initialDocument: quill.Document());
-  }
-
-  _createController(Idea idea) {
-    quill.Document? parsedDocument;
-    if (idea.richText != null && idea.richText!.isNotEmpty) {
-      List<dynamic>? decodedJson;
-      try {
-        decodedJson = jsonDecode(idea.richText!);
-      } catch (e) {
-        print(e);
-      }
-      if (decodedJson != null) {
-        parsedDocument = quill.Document.fromJson(decodedJson);
-      }
-    } else if (idea.plainText.isNotEmpty) {
-      parsedDocument = quill.Document()..insert(0, idea.plainText);
-    } else {
-      parsedDocument = quill.Document();
-    }
-    return quill.QuillController(document: parsedDocument ?? quill.Document(), selection: const TextSelection.collapsed(offset: 0));
+    return WritePage(ideaId: idea.id, initialIdea: idea);
   }
 }
