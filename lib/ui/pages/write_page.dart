@@ -10,25 +10,26 @@ class WritePage extends StatefulWidget {
   final String ideaId;
   final Document initialDocument;
 
-  WritePage({required this.ideaId, required this.initialDocument, Key? key})
-      : super(key: key) {}
+  const WritePage({
+    required this.ideaId,
+    required this.initialDocument,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<WritePage> createState() => _WritePageState();
 }
 
 class _WritePageState extends State<WritePage> {
-  QuillController? _controller;
+  late QuillController _controller;
   final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
-    if (widget.initialDocument != null) {
-      _controller = QuillController(
-        document: widget.initialDocument,
-        selection: const TextSelection.collapsed(offset: 0),
-      );
-    }
+    _controller = QuillController(
+      document: widget.initialDocument,
+      selection: const TextSelection.collapsed(offset: 0),
+    );
     _loadTextIfNeeded(context);
     super.initState();
   }
@@ -41,36 +42,37 @@ class _WritePageState extends State<WritePage> {
         return Future.value(false);
       },
       child: Scaffold(
-          appBar: AppBar(
-            title: const Text("Edit Idea"),
-            backgroundColor: Theme.of(context).cardColor,
-            iconTheme: Theme.of(context).iconTheme,
-            actions: [
-              IconButton(
-                onPressed: () => _onArchivePressed(context),
-                icon: const Icon(Icons.delete),
-              )
+        appBar: AppBar(
+          title: const Text("Edit Idea"),
+          backgroundColor: Theme.of(context).cardColor,
+          iconTheme: Theme.of(context).iconTheme,
+          actions: [
+            IconButton(
+              onPressed: () => _onArchivePressed(context),
+              icon: const Icon(Icons.delete),
+            )
+          ],
+        ),
+        body: SafeArea(
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  color: Theme.of(context).cardColor,
+                  child: _buildRichTextEditor(context),
+                ),
+              ),
+              _buildEditorToolbar(context)
             ],
           ),
-          body: SafeArea(
-            child: Column(
-              children: <Widget>[
-                Expanded(
-                  child: Container(
-                    color: Theme.of(context).cardColor,
-                    child: _buildRichTextEditor(context),
-                  ),
-                ),
-                _buildEditorToolbar(context)
-              ],
-            ),
-          )),
+        ),
+      ),
     );
   }
 
   Widget _buildEditorToolbar(BuildContext context) {
     var toolbar = QuillToolbar.basic(
-      controller: _controller!,
+      controller: _controller,
       showAlignmentButtons: false,
       showFontFamily: false,
       showFontSize: false,
@@ -102,7 +104,7 @@ class _WritePageState extends State<WritePage> {
 
   Widget _buildRichTextEditor(BuildContext context) {
     var quillEditor = QuillEditor(
-      controller: _controller!,
+      controller: _controller,
       scrollController: ScrollController(),
       scrollable: true,
       focusNode: _focusNode,
@@ -119,7 +121,7 @@ class _WritePageState extends State<WritePage> {
 
   Future<void> _loadTextIfNeeded(BuildContext context) async {
     Document? parsedDocument;
-    if (_controller != null && _controller!.getPlainText().isNotEmpty) return;
+    if (_controller.getPlainText().isNotEmpty) return;
     User user = Provider.of<User>(context, listen: false);
     var idea = await FirestoreService.getIdea(user.uid, widget.ideaId);
     if (idea.richText != null && idea.richText!.isNotEmpty) {
@@ -147,11 +149,11 @@ class _WritePageState extends State<WritePage> {
 
   Future<void> _onArchivePressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
-    Navigator.of(context).pop(_controller!.document);
+    Navigator.of(context).pop(_controller.document);
     await FirestoreService.archiveIdea(user.uid, widget.ideaId);
   }
 
   void _onBackPressed(BuildContext context) {
-    Navigator.of(context).pop(_controller!.document);
+    Navigator.of(context).pop(_controller.document);
   }
 }
