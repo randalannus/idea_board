@@ -68,6 +68,7 @@ class _WritePageState extends State<WritePage> {
   }
 
   Widget _buildEditorToolbar(BuildContext context) {
+    var theme = Theme.of(context);
     var toolbar = QuillToolbar.basic(
       controller: _controller,
       showAlignmentButtons: false,
@@ -94,6 +95,12 @@ class _WritePageState extends State<WritePage> {
       toolbarIconSize: 24,
       toolbarSectionSpacing: 2,
       showDividers: false,
+      iconTheme: QuillIconTheme(
+        iconSelectedColor: theme.canvasColor,
+        iconSelectedFillColor: theme.iconTheme.color,
+        iconUnselectedColor: theme.iconTheme.color,
+        iconUnselectedFillColor: Colors.transparent,
+      ),
     );
 
     return toolbar;
