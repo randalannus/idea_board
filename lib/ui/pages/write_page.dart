@@ -5,6 +5,7 @@ import 'package:flutter_quill/flutter_quill.dart' hide Text;
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/firestore_service.dart';
+import 'package:tuple/tuple.dart';
 import 'package:provider/provider.dart';
 
 class WritePage extends StatefulWidget {
@@ -110,6 +111,14 @@ class _WritePageState extends State<WritePage> {
       expands: false,
       padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
       textCapitalization: TextCapitalization.sentences,
+      customStyles: DefaultStyles(
+        paragraph: DefaultTextBlockStyle(
+          Theme.of(context).textTheme.bodyText1!,
+          const Tuple2(0, 0),
+          const Tuple2(0, 0),
+          null,
+        ),
+      ),
     );
 
     return quillEditor;

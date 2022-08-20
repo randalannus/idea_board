@@ -853,7 +853,7 @@ packages:
     source: hosted
     version: "0.2.3"
   tuple:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: tuple
       url: "https://pub.dartlang.org"

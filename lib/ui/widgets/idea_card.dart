@@ -8,6 +8,7 @@ import 'package:idea_board/service/firestore_service.dart';
 import 'package:idea_board/ui/pages/write_page.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:provider/provider.dart';
+import 'package:tuple/tuple.dart';
 
 class IdeaCard extends StatelessWidget {
   final Idea idea;
@@ -55,6 +56,14 @@ class IdeaCard extends StatelessWidget {
               readOnly: true,
               expands: false,
               padding: EdgeInsets.zero,
+              customStyles: quill.DefaultStyles(
+                paragraph: quill.DefaultTextBlockStyle(
+                  Theme.of(context).textTheme.bodyText2!,
+                  const Tuple2(0, 0),
+                  const Tuple2(0, 0),
+                  null,
+                ),
+              ),
             ),
           ),
         ),
