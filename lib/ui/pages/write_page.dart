@@ -52,17 +52,18 @@ class _WritePageState extends State<WritePage> {
               )
             ],
           ),
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Expanded(
-                child: Container(
-                  color: Theme.of(context).cardColor,
-                  child: _buildRichTextEditor(context),
+          body: SafeArea(
+            child: Column(
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    color: Theme.of(context).cardColor,
+                    child: _buildRichTextEditor(context),
+                  ),
                 ),
-              ),
-              _buildEditorToolbar(context)
-            ],
+                _buildEditorToolbar(context)
+              ],
+            ),
           )),
     );
   }
