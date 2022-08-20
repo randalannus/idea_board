@@ -10,7 +10,8 @@ class WritePage extends StatefulWidget {
   final String ideaId;
   final Document initialDocument;
 
-  WritePage({required this.ideaId, required this.initialDocument, Key? key}) : super(key: key) {}
+  WritePage({required this.ideaId, required this.initialDocument, Key? key})
+      : super(key: key) {}
 
   @override
   State<WritePage> createState() => _WritePageState();
@@ -23,7 +24,10 @@ class _WritePageState extends State<WritePage> {
   @override
   void initState() {
     if (widget.initialDocument != null) {
-      _controller = QuillController(document: widget.initialDocument, selection: const TextSelection.collapsed(offset: 0));
+      _controller = QuillController(
+        document: widget.initialDocument,
+        selection: const TextSelection.collapsed(offset: 0),
+      );
     }
     _loadTextIfNeeded(context);
     super.initState();
@@ -41,32 +45,24 @@ class _WritePageState extends State<WritePage> {
             title: const Text("Edit Idea"),
             backgroundColor: Theme.of(context).cardColor,
             iconTheme: Theme.of(context).iconTheme,
-            actions: [IconButton(onPressed: () => _onArchivePressed(context), icon: const Icon(Icons.delete))],
+            actions: [
+              IconButton(
+                onPressed: () => _onArchivePressed(context),
+                icon: const Icon(Icons.delete),
+              )
+            ],
           ),
-          body: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(
-                  flex: 15,
-                  child: Container(
-                    color: Colors.amber,
-                    padding: const EdgeInsets.all(4),
-                    child: Container(
-                      color: Colors.white,
-                      padding: const EdgeInsets.all(16),
-                      child: _buildRichTextEditor(context),
-                    ),
-                  ),
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  color: Theme.of(context).cardColor,
+                  child: _buildRichTextEditor(context),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(margin: EdgeInsets.zero, color: Colors.grey.shade200, child: _buildEditorToolbar(context)),
-                  ],
-                )
-              ],
-            ),
+              ),
+              _buildEditorToolbar(context)
+            ],
           )),
     );
   }
@@ -111,9 +107,10 @@ class _WritePageState extends State<WritePage> {
       focusNode: _focusNode,
       autoFocus: false,
       readOnly: false,
-      placeholder: 'Add content',
+      placeholder: 'Write here...',
       expands: false,
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+      textCapitalization: TextCapitalization.sentences,
     );
 
     return quillEditor;
@@ -139,7 +136,10 @@ class _WritePageState extends State<WritePage> {
     }
     if (parsedDocument != null) {
       setState(() {
-        _controller = QuillController(document: parsedDocument!, selection: const TextSelection.collapsed(offset: 0));
+        _controller = QuillController(
+          document: parsedDocument!,
+          selection: const TextSelection.collapsed(offset: 0),
+        );
       });
     }
   }
