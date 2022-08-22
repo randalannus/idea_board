@@ -30,19 +30,12 @@ class _WritePageState extends State<WritePage> {
   late final Saver _saver;
   late final StreamSubscription _changeSub;
 
-  String _savingState = '';
-
   @override
   void initState() {
     _controller = createQuillController(widget.initialIdea);
-    _saver = Saver(widget.userId, widget.ideaId, _controller,
-        onDataSaved: () => setState(() {
-              _savingState = "All changes saved!";
-            }),
-        onTimerStarted: () => setState(() {
-              _savingState = "Waiting to save...";
-            }));
+    _saver = Saver(widget.userId, widget.ideaId, _controller);
     _changeSub = _controller.document.changes.listen((_) => _saver.notify());
+
     super.initState();
   }
 
@@ -88,10 +81,18 @@ class _WritePageState extends State<WritePage> {
                         alignment: Alignment.bottomRight,
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            _savingState,
-                            style: TextStyle(color: Colors.grey.shade300, fontWeight: FontWeight.bold),
-                          ),
+                          child: StreamBuilder<SaverState>(
+                              stream: _saver.stateChanges,
+                              initialData: _saver.state,
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) return const SizedBox();
+                                return Text(
+                                  _savingMessage(snapshot.data!),
+                                  style: TextStyle(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                );
+                              }),
                         ),
                       ),
                     )
@@ -104,6 +105,12 @@ class _WritePageState extends State<WritePage> {
         ),
       ),
     );
+  }
+
+  String _savingMessage(SaverState state) {
+    if (state == SaverState.saved) return "Saved";
+    if (state == SaverState.saving) return "Saving..";
+    return "Network Error";
   }
 
   Widget _buildEditorToolbar(BuildContext context) {
@@ -205,34 +212,44 @@ class Saver {
   final String userId;
   final String ideaId;
   final QuillController controller;
-  final VoidCallback? onTimerStarted;
-  final VoidCallback? onDataSaved;
   static const delay = Duration(seconds: 2);
 
   Timer? _timer;
 
-  Saver(this.userId, this.ideaId, this.controller, {this.onTimerStarted, this.onDataSaved});
+  SaverState state = SaverState.saved;
+  final _controller = StreamController<SaverState>.broadcast();
+  Stream<SaverState> get stateChanges => _controller.stream.distinct();
+
+  Saver(this.userId, this.ideaId, this.controller) {
+    _controller.add(state);
+  }
 
   void notify() {
-    if (_timer != null) {
-      _timer!.cancel();
-    }
+    _timer?.cancel();
     _timer = Timer(delay, save);
-    if (onTimerStarted != null) {
-      onTimerStarted!();
-    }
+    _setState(SaverState.saving);
   }
 
   Future<void> save() async {
     _timer?.cancel();
-    await FirestoreService.editIdeaText(
-      userId,
-      ideaId,
-      controller.document.toPlainText(),
-      jsonEncode(controller.document.toDelta().toJson()),
-    );
-    if (onDataSaved != null) {
-      onDataSaved!();
+    try {
+      await FirestoreService.editIdeaText(
+        userId,
+        ideaId,
+        controller.document.toPlainText(),
+        jsonEncode(controller.document.toDelta().toJson()),
+      ).timeout(const Duration(seconds: 5));
+    } on TimeoutException catch (_) {
+      _setState(SaverState.networkError);
+      return;
     }
+    _setState(SaverState.saved);
+  }
+
+  void _setState(SaverState state) {
+    this.state = state;
+    _controller.add(state);
   }
 }
+
+enum SaverState { saved, saving, networkError }
