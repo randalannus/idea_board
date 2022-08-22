@@ -30,10 +30,18 @@ class _WritePageState extends State<WritePage> {
   late final Saver _saver;
   late final StreamSubscription _changeSub;
 
+  String _savingState = '';
+
   @override
   void initState() {
     _controller = createQuillController(widget.initialIdea);
-    _saver = Saver(widget.userId, widget.ideaId, _controller);
+    _saver = Saver(widget.userId, widget.ideaId, _controller,
+        onDataSaved: () => setState(() {
+              _savingState = "All changes saved!";
+            }),
+        onTimerStarted: () => setState(() {
+              _savingState = "Waiting to save...";
+            }));
     _changeSub = _controller.document.changes.listen((_) => _saver.notify());
     super.initState();
   }
@@ -67,9 +75,27 @@ class _WritePageState extends State<WritePage> {
           child: Column(
             children: <Widget>[
               Expanded(
-                child: Container(
-                  color: Theme.of(context).cardColor,
-                  child: _buildRichTextEditor(context),
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Container(
+                        color: Theme.of(context).cardColor,
+                        child: _buildRichTextEditor(context),
+                      ),
+                    ),
+                    IgnorePointer(
+                      child: Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            _savingState,
+                            style: TextStyle(color: Colors.grey.shade300, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
                 ),
               ),
               _buildEditorToolbar(context)
@@ -179,25 +205,34 @@ class Saver {
   final String userId;
   final String ideaId;
   final QuillController controller;
+  final VoidCallback? onTimerStarted;
+  final VoidCallback? onDataSaved;
   static const delay = Duration(seconds: 2);
 
   Timer? _timer;
 
-  Saver(this.userId, this.ideaId, this.controller);
+  Saver(this.userId, this.ideaId, this.controller, {this.onTimerStarted, this.onDataSaved});
 
   void notify() {
-    if (_timer == null || !_timer!.isActive) {
-      _timer = Timer(delay, save);
+    if (_timer != null) {
+      _timer!.cancel();
+    }
+    _timer = Timer(delay, save);
+    if (onTimerStarted != null) {
+      onTimerStarted!();
     }
   }
 
-  Future<void> save() {
+  Future<void> save() async {
     _timer?.cancel();
-    return FirestoreService.editIdeaText(
+    await FirestoreService.editIdeaText(
       userId,
       ideaId,
       controller.document.toPlainText(),
       jsonEncode(controller.document.toDelta().toJson()),
     );
+    if (onDataSaved != null) {
+      onDataSaved!();
+    }
   }
 }
