@@ -204,8 +204,8 @@ QuillController createQuillController(Idea idea) {
 /// A class for periodically saving text from Quill to the database.
 ///
 /// Call [Saver.notify] when there are changes to the idea's text.
-/// [Saver] will wait and accumulate changes for [Saver.delay] and then save.
-/// Calling [Saver.notify] when it is already waiting has no effect.
+/// [Saver] will wait and accumulate changes until [Saver.delay] has passed since last call and then save.
+/// Calling [Saver.notify] when it is already waiting resets the timer.
 ///
 /// Call [Saver.save] to save immediately and cancel waiting for changes.
 class Saver {
