@@ -141,7 +141,7 @@
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				D54A01D0217B03EE492E7E3A /* [CP] Embed Pods Frameworks */,
-				CC1B90B1C2B6C240767CC9AD /* [CP] Copy Pods Resources */,
+				BB1FA4E27E773E133A48B2B1 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -250,7 +250,7 @@
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
 		};
-		CC1B90B1C2B6C240767CC9AD /* [CP] Copy Pods Resources */ = {
+		BB1FA4E27E773E133A48B2B1 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (

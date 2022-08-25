@@ -25,3 +25,4 @@ provide the argument.
 
 # Running on iOS
 Execute `pod update` in the ios folder before compiling for iOS to speed up the compiling process.
+There is a line in `/ios/Podfile` that needs to be commented out for release builds. See the file for more info.
