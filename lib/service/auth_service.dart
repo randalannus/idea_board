@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -46,7 +48,10 @@ class AuthService {
     return SignInResult.fromUser(User.fromFirebaseAuth(userCredential.user!));
   }
 
-  static Future<bool> get appleSignInAvailable => SignInWithApple.isAvailable();
+  static Future<bool> get appleSignInAvailable async {
+    if (!Platform.isIOS) return false;
+    return await SignInWithApple.isAvailable();
+  }
 
   static Future<SignInResult> signInWithApple() async {
     AuthorizationCredentialAppleID appleCredential;
