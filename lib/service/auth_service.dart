@@ -49,6 +49,7 @@ class AuthService {
   }
 
   static Future<bool> get appleSignInAvailable async {
+    // Apple sign in is possible on android, but we do not need to support it.
     if (!Platform.isIOS) return false;
     return await SignInWithApple.isAvailable();
   }
