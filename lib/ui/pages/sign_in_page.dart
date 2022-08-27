@@ -31,19 +31,43 @@ class _SignInPageState extends State<SignInPage> {
             SignInButton(
               Buttons.Google,
               onPressed: _onGoogleSignInPressed,
-            )
+            ),
+            const SizedBox(
+              height: 15,
+            ),
+            FutureBuilder<bool>(
+              future: AuthService.appleSignInAvailable,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || !snapshot.data!) {
+                  return const SizedBox();
+                }
+                return SignInButton(
+                  Buttons.Apple,
+                  onPressed: _onAppleSignInPressed,
+                );
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  void _onGoogleSignInPressed() async {
+  Future<void> _onGoogleSignInPressed() async {
     var result = await AuthService.signInWithGoogle(context);
+    _respondToSignIn(result);
+  }
+
+  Future<void> _onAppleSignInPressed() async {
+    var result = await AuthService.signInWithApple();
+    _respondToSignIn(result);
+  }
+
+  void _respondToSignIn(SignInResult result) {
     if (result.isSuccessful) return;
 
     String? errorMessage;
-    if (result.error! == SignInError.cancelled) {
+    if (result.error! == SignInError.canceled) {
       errorMessage = "Sign in cancelled";
     } else if (result.error! == SignInError.noConnection) {
       errorMessage = "No internet connection";
