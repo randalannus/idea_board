@@ -21,6 +21,7 @@ class AuthService {
   static final Future<SharedPreferences> _prefs =
       SharedPreferences.getInstance();
   static const String deviceIdKey = "DEVICE_ID";
+  static const String devicePasswordKey = "DEVICE_PASSWORD";
 
   static fb_auth.FirebaseAuth get _instance => fb_auth.FirebaseAuth.instance;
 
@@ -86,21 +87,28 @@ class AuthService {
   static Future<SignInResult> signInWithDeviceId() async {
     SharedPreferences prefs = await _prefs;
     String? deviceId = prefs.getString(deviceIdKey);
+    String? devicePw = prefs.getString(devicePasswordKey);
 
     fb_auth.UserCredential userCredential;
-    if (deviceId == null) {
+    if (deviceId == null || devicePw == null) {
       // Create new user if this option is used for the first time on the device
       deviceId = uuid.v4();
-      await prefs.setString(deviceIdKey, deviceId);
-      userCredential = await _instance.createUserWithEmailAndPassword(
+      devicePw = _generatePassword();
+
+      List<Future> futures = [];
+      futures.add(_instance.createUserWithEmailAndPassword(
         email: _emailFromDeviceId(deviceId),
-        password: deviceId,
-      );
+        password: devicePw,
+      ));
+      futures.add(prefs.setString(deviceIdKey, deviceId));
+      futures.add(prefs.setString(devicePasswordKey, devicePw));
+
+      userCredential = (await Future.wait(futures))[0];
     } else {
       // Sign in using an existing device id
       userCredential = await _instance.signInWithEmailAndPassword(
         email: _emailFromDeviceId(deviceId),
-        password: deviceId,
+        password: devicePw,
       );
     }
 
@@ -109,6 +117,10 @@ class AuthService {
 
   static String _emailFromDeviceId(String deviceId) {
     return "zzz-ideaBoardAppSignIn-$deviceId@example.com";
+  }
+
+  static String _generatePassword() {
+    return uuid.v4();
   }
 
   static Stream<User?> userChanges() {
