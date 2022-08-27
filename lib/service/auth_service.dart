@@ -1,11 +1,12 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:idea_board/model/user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:uuid/uuid.dart';
 
 import '../firebase_options.dart';
 
@@ -15,9 +16,15 @@ class AuthService {
       DefaultFirebaseOptions.currentPlatform.iosClientId;
   static final GoogleSignIn _googleSignIn = GoogleSignIn(clientId: _clientId);
 
+  static const uuid = Uuid();
+
+  static final Future<SharedPreferences> _prefs =
+      SharedPreferences.getInstance();
+  static const String deviceIdKey = "DEVICE_ID";
+
   static fb_auth.FirebaseAuth get _instance => fb_auth.FirebaseAuth.instance;
 
-  static Future<SignInResult> signInWithGoogle(BuildContext context) async {
+  static Future<SignInResult> signInWithGoogle() async {
     // Trigger the authentication flow
     GoogleSignInAccount? googleUser;
     try {
@@ -74,6 +81,34 @@ class AuthService {
 
     var userCredential = await _instance.signInWithCredential(credential);
     return SignInResult.fromUser(User.fromFirebaseAuth(userCredential.user!));
+  }
+
+  static Future<SignInResult> signInWithDeviceId() async {
+    SharedPreferences prefs = await _prefs;
+    String? deviceId = prefs.getString(deviceIdKey);
+
+    fb_auth.UserCredential userCredential;
+    if (deviceId == null) {
+      // Create new user if this option is used for the first time on the device
+      deviceId = uuid.v4();
+      await prefs.setString(deviceIdKey, deviceId);
+      userCredential = await _instance.createUserWithEmailAndPassword(
+        email: _emailFromDeviceId(deviceId),
+        password: deviceId,
+      );
+    } else {
+      // Sign in using an existing device id
+      userCredential = await _instance.signInWithEmailAndPassword(
+        email: _emailFromDeviceId(deviceId),
+        password: deviceId,
+      );
+    }
+
+    return SignInResult.fromUser(User.fromFirebaseAuth(userCredential.user!));
+  }
+
+  static String _emailFromDeviceId(String deviceId) {
+    return "zzz-ideaBoardAppSignIn-$deviceId@example.com";
   }
 
   static Stream<User?> userChanges() {
