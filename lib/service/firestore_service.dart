@@ -25,7 +25,8 @@ class FirestoreService {
   static Future<Idea> newIdea(String userId) async {
     final idea = Idea(
       id: _uuid.v4(),
-      text: "",
+      plainText: "",
+      richText: null,
       createdAt: DateTime.now(),
       isArchived: false,
       lastRecommended: null,
@@ -37,8 +38,8 @@ class FirestoreService {
   /// Changes the text of an idea.
   /// If the idea does not exist, a [FirebaseException] will be thrown.
   static Future<void> editIdeaText(
-      String userId, String ideaId, String text) async {
-    var map = {Idea.fText: text};
+      String userId, String ideaId, String plainText, String? richText) async {
+    var map = {Idea.fPlainText: plainText, Idea.fRichText: richText};
     await _ideasColRef(userId).doc(ideaId).update(map);
   }
 

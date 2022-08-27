@@ -5,7 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:idea_board/model/idea.dart';
 
 const fId = Idea.fId;
-const fText = Idea.fText;
+const fText = Idea.fPlainText;
 const fCreatedAt = Idea.fCreatedAt;
 const fIsArchived = Idea.fIsArchived;
 const fLastRecommended = Idea.fLastRecommended;
@@ -23,7 +23,8 @@ class IdeasProvider with ChangeNotifier {
     final db = await DBHandler.initializeDB();
     final idea = Idea(
       id: const Uuid().v4().hashCode.toString(),
-      text: "",
+      plainText: "",
+      richText: null,
       createdAt: DateTime.now(),
       isArchived: false,
       lastRecommended: null,
