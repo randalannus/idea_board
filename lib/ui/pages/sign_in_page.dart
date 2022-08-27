@@ -3,67 +3,100 @@ import 'package:flutter_signin_button/button_list.dart';
 import 'package:flutter_signin_button/button_view.dart';
 import 'package:idea_board/service/auth_service.dart';
 
-class SignInPage extends StatefulWidget {
+class SignInPage extends StatelessWidget {
   const SignInPage({Key? key}) : super(key: key);
 
-  @override
-  State<SignInPage> createState() => _SignInPageState();
-}
-
-class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "Sign in",
-              style: theme.textTheme.headlineLarge!.copyWith(
-                color: theme.primaryColor,
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Sign in",
+                style: theme.textTheme.headlineLarge!.copyWith(
+                  color: theme.primaryColor,
+                ),
               ),
-            ),
-            const SizedBox(
-              height: 100,
-            ),
-            SignInButton(
-              Buttons.Google,
-              onPressed: _onGoogleSignInPressed,
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            FutureBuilder<bool>(
-              future: AuthService.appleSignInAvailable,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData || !snapshot.data!) {
-                  return const SizedBox();
-                }
-                return SignInButton(
-                  Buttons.Apple,
-                  onPressed: _onAppleSignInPressed,
-                );
-              },
-            ),
-          ],
+              const SizedBox(
+                height: 100,
+              ),
+              const SignInButtons(),
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Future<void> _onGoogleSignInPressed() async {
-    var result = await AuthService.signInWithGoogle(context);
-    _respondToSignIn(result);
+class SignInButtons extends StatefulWidget {
+  const SignInButtons({Key? key}) : super(key: key);
+
+  @override
+  State<SignInButtons> createState() => _SignInButtonsState();
+}
+
+class _SignInButtonsState extends State<SignInButtons> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        SignInButton(
+          Buttons.Google,
+          onPressed: onGoogleSignInPressed,
+        ),
+        const SizedBox(height: 15),
+        FutureBuilder<bool>(
+          future: AuthService.appleSignInAvailable,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || !snapshot.data!) return Container();
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SignInButton(
+                  Buttons.Apple,
+                  onPressed: onAppleSignInPressed,
+                ),
+                const SizedBox(height: 15),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 15),
+        TextButton(
+          onPressed: onNoSignInPressed,
+          child: const Text("Continue without signing in"),
+        )
+      ],
+    );
   }
 
-  Future<void> _onAppleSignInPressed() async {
+  Future<void> onGoogleSignInPressed() async {
+    var result = await AuthService.signInWithGoogle();
+    respondToSignIn(result);
+  }
+
+  Future<void> onAppleSignInPressed() async {
     var result = await AuthService.signInWithApple();
-    _respondToSignIn(result);
+    respondToSignIn(result);
   }
 
-  void _respondToSignIn(SignInResult result) {
+  Future<void> onNoSignInPressed() async {
+    bool? userAccepted = await showDialog<bool>(
+      context: context,
+      builder: (context) => const NoSignInDialog(),
+    );
+    if (!(userAccepted ?? false)) return;
+    var result = await AuthService.signInWithDeviceId();
+    respondToSignIn(result);
+  }
+
+  void respondToSignIn(SignInResult result) {
     if (result.isSuccessful) return;
 
     String? errorMessage;
@@ -76,11 +109,11 @@ class _SignInPageState extends State<SignInPage> {
     }
 
     if (mounted && errorMessage != null) {
-      showSnackbar(context, errorMessage);
+      showSnackbar(errorMessage);
     }
   }
 
-  void showSnackbar(BuildContext context, String message) {
+  void showSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         shape: const RoundedRectangleBorder(
@@ -91,6 +124,30 @@ class _SignInPageState extends State<SignInPage> {
         behavior: SnackBarBehavior.floating,
         content: Text(message),
       ),
+    );
+  }
+}
+
+class NoSignInDialog extends StatelessWidget {
+  const NoSignInDialog({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Warning"),
+      content: const Text(
+        "Your data won't be synced across devices and uninstalling the "
+        "app results in losing all your data.",
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text("Cancel")),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text("Continue"),
+        ),
+      ],
     );
   }
 }
