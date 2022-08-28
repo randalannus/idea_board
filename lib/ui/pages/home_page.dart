@@ -9,6 +9,7 @@ import 'package:idea_board/service/firestore_service.dart';
 import 'package:idea_board/ui/pages/feed_page.dart';
 import 'package:idea_board/ui/pages/list_page.dart';
 import 'package:idea_board/ui/pages/write_page.dart';
+import 'package:idea_board/ui/widgets/confimation_dialog.dart';
 import 'package:idea_board/ui/widgets/transition_switcher.dart';
 import 'package:provider/provider.dart';
 
@@ -56,7 +57,7 @@ class _HomePageState extends State<HomePage> {
         })
       ],
       child: Scaffold(
-        appBar: topAppBar(context),
+        appBar: topAppBar(),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _fabPressed(context),
           child: const Icon(Icons.add),
@@ -68,23 +69,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  PreferredSizeWidget topAppBar(BuildContext context) {
+  PreferredSizeWidget topAppBar() {
     return AppBar(
       title: const Text("Ideas"),
-      actions: [
-        PopupMenuButton(
-          icon: Icon(
-            Icons.more_vert,
-            color: Theme.of(context).iconTheme.color,
-          ),
-          itemBuilder: (context) => const [
-            PopupMenuItem(
-              onTap: AuthService.signOut,
-              child: Text("Sign out"),
-            )
-          ],
-        )
-      ],
+      actions: const [MenuButton()],
     );
   }
 
@@ -167,5 +155,76 @@ class _HomePageState extends State<HomePage> {
       );
     }
     await provider.deleteAllIdeas();
+  }
+}
+
+class MenuButton extends StatefulWidget {
+  static const signOutValue = "signOut";
+  static const deleteAccountValue = "deleteAccount";
+
+  const MenuButton({Key? key}) : super(key: key);
+
+  @override
+  State<MenuButton> createState() => _MenuButtonState();
+}
+
+class _MenuButtonState extends State<MenuButton> {
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton(
+      icon: Icon(
+        Icons.more_vert,
+        color: Theme.of(context).iconTheme.color,
+      ),
+      itemBuilder: (context) => const [
+        PopupMenuItem(
+          value: MenuButton.signOutValue,
+          child: Text("Sign out"),
+        ),
+        PopupMenuItem(
+          value: MenuButton.deleteAccountValue,
+          child: Text("Delete account"),
+        ),
+      ],
+      onSelected: (value) async {
+        if (value == MenuButton.signOutValue) {
+          await AuthService.signOut();
+        } else if (value == MenuButton.deleteAccountValue) {
+          await onDeletePressed(context);
+        }
+      },
+    );
+  }
+
+  Future<void> onDeletePressed(BuildContext context) async {
+    bool userAccepted = await showConfirmationDialog(
+      context: context,
+      dialog: const ConfirmationDialog(
+        title: "Delete account",
+        content: "Are you sure you want to delete your account?"
+            " This action is irreversible.",
+        confirmButton: "Delete",
+      ),
+    );
+
+    if (!userAccepted) return;
+    try {
+      await AuthService.deleteCurrentUser();
+    } on AuthenticationRequiredException {
+      if (!mounted) return;
+      await _promptSignOut(context);
+    }
+  }
+
+  Future<void> _promptSignOut(BuildContext context) async {
+    bool userAccepted = await showConfirmationDialog(
+      context: context,
+      dialog: const ConfirmationDialog(
+        title: "Error",
+        content: "Please sign in again to delete your account",
+        confirmButton: "Go to sign in",
+      ),
+    );
+    if (userAccepted) await AuthService.signOut();
   }
 }
