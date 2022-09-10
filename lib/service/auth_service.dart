@@ -92,27 +92,39 @@ class AuthService {
     fb_auth.UserCredential userCredential;
     if (deviceId == null || devicePw == null) {
       // Create new user if this option is used for the first time on the device
-      deviceId = uuid.v4();
-      devicePw = _generatePassword();
+      userCredential = await _createDeviceUser();
+      return SignInResult.fromUser(User.fromFirebaseAuth(userCredential.user!));
+    }
 
-      List<Future> futures = [];
-      futures.add(_instance.createUserWithEmailAndPassword(
-        email: _emailFromDeviceId(deviceId),
-        password: devicePw,
-      ));
-      futures.add(prefs.setString(deviceIdKey, deviceId));
-      futures.add(prefs.setString(devicePasswordKey, devicePw));
-
-      userCredential = (await Future.wait(futures))[0];
-    } else {
-      // Sign in using an existing device id
+    // Sign in using an existing device id
+    try {
       userCredential = await _instance.signInWithEmailAndPassword(
         email: _emailFromDeviceId(deviceId),
         password: devicePw,
       );
+    } on fb_auth.FirebaseAuthException catch (e) {
+      // This generally occurs when the user has been deleted
+      if (e.code != "user-not-found") rethrow;
+      userCredential = await _createDeviceUser();
     }
 
     return SignInResult.fromUser(User.fromFirebaseAuth(userCredential.user!));
+  }
+
+  static Future<fb_auth.UserCredential> _createDeviceUser() async {
+    SharedPreferences prefs = await _prefs;
+    String deviceId = uuid.v4();
+    String devicePw = _generatePassword();
+
+    List<Future> futures = [];
+    futures.add(_instance.createUserWithEmailAndPassword(
+      email: _emailFromDeviceId(deviceId),
+      password: devicePw,
+    ));
+    futures.add(prefs.setString(deviceIdKey, deviceId));
+    futures.add(prefs.setString(devicePasswordKey, devicePw));
+
+    return (await Future.wait(futures))[0];
   }
 
   static String _emailFromDeviceId(String deviceId) {
@@ -141,6 +153,23 @@ class AuthService {
     return User.fromFirebaseAuth(fbUser);
   }
 
+  /// Deletes the current user and signs out.
+  ///
+  /// Throws [NoSignedInUserError] if no user is currently signed in.
+  ///
+  /// Throws [AuthenticationRequiredException] if the user needs to sign in
+  /// again to delete the account.
+  static Future<void> deleteCurrentUser() async {
+    fb_auth.User? user = _instance.currentUser;
+    if (user == null) throw NoSignedInUserError();
+    try {
+      await user.delete();
+    } on fb_auth.FirebaseAuthException catch (e) {
+      if (e.code != "requires-recent-login") rethrow;
+      throw AuthenticationRequiredException();
+    }
+  }
+
   static Future<void> useEmulator(String host, int port) async {
     await _instance.useAuthEmulator(host, 9099);
     await signOut();
@@ -158,3 +187,7 @@ class SignInResult {
 }
 
 enum SignInError { failed, canceled, noConnection }
+
+class NoSignedInUserError extends Error {}
+
+class AuthenticationRequiredException implements Exception {}

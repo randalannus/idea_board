@@ -30,6 +30,13 @@ class Themes {
     cardColor: cardColor,
     floatingActionButtonTheme:
         const FloatingActionButtonThemeData(foregroundColor: Colors.white),
+    dialogTheme: DialogTheme(
+      titleTextStyle: typography.black.titleLarge!.copyWith(
+        fontSize: 20,
+        fontWeight: FontWeight.w500,
+        color: primaryColor,
+      ),
+    ),
   );
 
   static MaterialColor createMaterialColor(int hex) {

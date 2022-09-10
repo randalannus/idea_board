@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/button_list.dart';
 import 'package:flutter_signin_button/button_view.dart';
 import 'package:idea_board/service/auth_service.dart';
+import 'package:idea_board/ui/widgets/confimation_dialog.dart';
 
 class SignInPage extends StatelessWidget {
   const SignInPage({Key? key}) : super(key: key);
@@ -87,11 +88,17 @@ class _SignInButtonsState extends State<SignInButtons> {
   }
 
   Future<void> onNoSignInPressed() async {
-    bool? userAccepted = await showDialog<bool>(
+    bool userAccepted = await showConfirmationDialog(
       context: context,
-      builder: (context) => const NoSignInDialog(),
+      dialog: const ConfirmationDialog(
+        title: "Warning",
+        content:
+            "Your data won't be synced across devices and uninstalling the "
+            "app results in losing all your data.",
+        confirmButton: "Continue",
+      ),
     );
-    if (!(userAccepted ?? false)) return;
+    if (!userAccepted) return;
     var result = await AuthService.signInWithDeviceId();
     respondToSignIn(result);
   }
@@ -124,30 +131,6 @@ class _SignInButtonsState extends State<SignInButtons> {
         behavior: SnackBarBehavior.floating,
         content: Text(message),
       ),
-    );
-  }
-}
-
-class NoSignInDialog extends StatelessWidget {
-  const NoSignInDialog({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Warning"),
-      content: const Text(
-        "Your data won't be synced across devices and uninstalling the "
-        "app results in losing all your data.",
-      ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("Cancel")),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text("Continue"),
-        ),
-      ],
     );
   }
 }
