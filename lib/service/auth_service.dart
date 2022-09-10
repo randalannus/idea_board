@@ -168,6 +168,7 @@ class AuthService {
       if (e.code != "requires-recent-login") rethrow;
       throw AuthenticationRequiredException();
     }
+    await signOut();
   }
 
   static Future<void> useEmulator(String host, int port) async {
