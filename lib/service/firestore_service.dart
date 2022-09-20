@@ -65,6 +65,23 @@ class FirestoreService {
         .handleError((_) {});
   }
 
+  /// Stream of ideas when they are archived. The stream does not guarantee
+  /// that an idea is passed only once to this stream. In fact it might appear
+  /// with any change to the idea.
+  static Stream<Idea> archiveChanges(String userId) {
+    return _ideasColRef(userId)
+        .snapshots()
+        .map((snap) => snap.docChanges
+            .where((change) {
+              var map = change.doc.data();
+              if (map == null) return false;
+              return Idea.fromFirestore(map).isArchived;
+            })
+            .map((change) => Idea.fromFirestore(change.doc.data()!))
+            .toList())
+        .expand<Idea>((ideas) => ideas);
+  }
+
   /// Sets the lastRecommended field of an idea.
   /// If the idea does not exist, a [FirebaseException] will be thrown.
   static Future<void> setIdeaLastRecommended({

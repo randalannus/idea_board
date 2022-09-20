@@ -27,6 +27,10 @@ class _FeedPageState extends State<FeedPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.jumpToPosition(feedProvider.currentPos);
     });
+    // TODO: Close sub
+    feedProvider.currentPosChanges.listen((event) {
+      controller.jumpToPosition(event);
+    });
 
     super.initState();
   }

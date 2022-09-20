@@ -25,7 +25,6 @@ class _HomePageState extends State<HomePage> {
   static const listPageIndex = 1;
 
   int _activePage = listPageIndex;
-  FeedProvider? feedProvider;
 
   void _setPage(int pageNumber) {
     setState(() {
@@ -51,10 +50,9 @@ class _HomePageState extends State<HomePage> {
           initialData: const [],
           catchError: (context, error) => [],
         ),
-        ChangeNotifierProvider<FeedProvider>(create: (context) {
-          var ideasStream = FirestoreService.ideasListStream(user.uid);
-          return FeedProvider(user, ideasStream);
-        })
+        ChangeNotifierProvider<FeedProvider>(
+          create: (context) => FeedProvider(user),
+        )
       ],
       child: Scaffold(
         appBar: topAppBar(),

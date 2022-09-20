@@ -12,16 +12,19 @@ class FeedProvider with ChangeNotifier {
   final User user;
 
   /// List of all ideas for the user.
-  final Stream<List<Idea>> ideasStream;
   late final StreamSubscription<List<Idea>> _ideasSub;
+  late final StreamSubscription<Idea> _archiveSub;
 
-  FeedProvider(this.user, this.ideasStream) {
-    _ideasSub = ideasStream.listen((newIdeas) {
+  FeedProvider(this.user) {
+    _ideasSub = FirestoreService.ideasListStream(user.uid).listen((newIdeas) {
       _updateIdeas(newIdeas);
       if (feed.length < 3 && canRecommend) {
         recommendIdea(count: 3);
       }
     });
+
+    _archiveSub =
+        FirestoreService.archiveChanges(user.uid).listen(_archiveListener);
   }
 
   /// All ideas that the user has
@@ -52,6 +55,9 @@ class FeedProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  final _currentPosChangesCtrl = StreamController<int>();
+  Stream<int> get currentPosChanges => _currentPosChangesCtrl.stream;
+
   /// The biggest position the user has scrolled to.
   /// This is tracked to not recommend ideas that have just been recommended.
   int _lastSeenPos = 0;
@@ -60,17 +66,19 @@ class FeedProvider with ChangeNotifier {
   @override
   void dispose() {
     _ideasSub.cancel();
+    _archiveSub.cancel();
     super.dispose();
   }
 
   /// Set which feed position the user has scrolled to.
-  Future<void> updateLastSeenPos(int position) {
+  Future<void> updateLastSeenPos(int position) async {
+    if (position <= lastSeenPos) return;
     List<Future> futures = [];
     for (var i = lastSeenPos + 1; i <= position; i++) {
       futures.add(_updateRecomendationIndex(i));
     }
     _lastSeenPos = position;
-    return Future.wait(futures);
+    await Future.wait(futures);
   }
 
   /// Call this when any idea changes or a new one is created
@@ -153,5 +161,26 @@ class FeedProvider with ChangeNotifier {
       }
     }
     return ideas.last;
+  }
+
+  /// TODO: comment
+  Future<void> _archiveListener(Idea idea) async {
+    // TODO: better variable names
+    int oldFeedLength = feed.length;
+    int comingCount = 0;
+    for (var i = lastSeenPos + 1; i < feed.length; i++) {
+      if (feed[i] == idea.id) comingCount++;
+    }
+    feed.removeWhere((ideaId) => ideaId == idea.id);
+    int removedCount = oldFeedLength - feed.length;
+    if (removedCount == 0) return;
+
+    // TODO: remove hack
+    _unarchivedIdeas.removeWhere((e) => e.id == idea.id);
+    recommendIdea(count: removedCount);
+    int previousCount = removedCount - comingCount;
+    currentPos -= previousCount;
+    _currentPosChangesCtrl.add(currentPos);
+    await updateLastSeenPos(lastSeenPos - previousCount);
   }
 }
