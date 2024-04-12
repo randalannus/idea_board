@@ -33,20 +33,22 @@ class IdeaCard extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 50),
           child: AbsorbPointer(
             child: quill.QuillEditor(
-              controller: createQuillController(idea),
               scrollController: ScrollController(),
-              scrollable: false,
               focusNode: FocusNode(),
-              autoFocus: false,
-              readOnly: true,
-              expands: false,
-              padding: EdgeInsets.zero,
-              customStyles: quill.DefaultStyles(
-                paragraph: quill.DefaultTextBlockStyle(
-                  Theme.of(context).textTheme.bodyText2!,
-                  const Tuple2(0, 0),
-                  const Tuple2(0, 0),
-                  null,
+              configurations: quill.QuillEditorConfigurations(
+                controller: createQuillController(idea),
+                scrollable: false,
+                autoFocus: false,
+                readOnly: true,
+                expands: false,
+                padding: EdgeInsets.zero,
+                customStyles: quill.DefaultStyles(
+                  paragraph: quill.DefaultTextBlockStyle(
+                    Theme.of(context).textTheme.bodyText2!,
+                    const quill.VerticalSpacing(0, 0),
+                    const quill.VerticalSpacing(0, 0),
+                    null,
+                  ),
                 ),
               ),
             ),

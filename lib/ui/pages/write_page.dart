@@ -115,37 +115,40 @@ class _WritePageState extends State<WritePage> {
 
   Widget _buildEditorToolbar(BuildContext context) {
     var theme = Theme.of(context);
-    var toolbar = QuillToolbar.basic(
-      controller: _controller,
-      showAlignmentButtons: false,
-      showFontFamily: false,
-      showFontSize: false,
-      showHeaderStyle: false,
-      showVideoButton: false,
-      showSearchButton: false,
-      showColorButton: false,
-      showCodeBlock: false,
-      showInlineCode: false,
-      showListCheck: false,
-      showLink: false,
-      showItalicButton: false,
-      showUnderLineButton: false,
-      showUndo: false,
-      showImageButton: false,
-      showIndent: true,
-      showQuote: false,
-      showClearFormat: false,
-      showBackgroundColorButton: false,
-      showStrikeThrough: false,
-      showRedo: false,
-      toolbarIconSize: 24,
-      toolbarSectionSpacing: 2,
-      showDividers: false,
-      iconTheme: QuillIconTheme(
-        iconSelectedColor: theme.canvasColor,
-        iconSelectedFillColor: theme.iconTheme.color,
-        iconUnselectedColor: theme.iconTheme.color,
-        iconUnselectedFillColor: Colors.transparent,
+    var toolbar = QuillToolbar.simple(
+      configurations: QuillSimpleToolbarConfigurations(
+        controller: _controller,
+        showAlignmentButtons: false,
+        showFontFamily: false,
+        showFontSize: false,
+        showHeaderStyle: false,
+        showSearchButton: false,
+        showColorButton: false,
+        showCodeBlock: false,
+        showInlineCode: false,
+        showListCheck: false,
+        showLink: false,
+        showItalicButton: false,
+        showUnderLineButton: false,
+        showUndo: false,
+        showIndent: true,
+        showQuote: false,
+        showClearFormat: false,
+        showBackgroundColorButton: false,
+        showStrikeThrough: false,
+        showRedo: false,
+        //toolbarIconSize: 24,
+        toolbarSectionSpacing: 2,
+        showDividers: false,
+        buttonOptions: const QuillSimpleToolbarButtonOptions(
+            base: QuillToolbarBaseButtonOptions(
+                /*iconTheme: QuillIconTheme(
+            iconSelectedColor: theme.canvasColor,
+            iconSelectedFillColor: theme.iconTheme.color,
+            iconUnselectedColor: theme.iconTheme.color,
+            iconUnselectedFillColor: Colors.transparent,
+          ),*/
+                )),
       ),
     );
 
@@ -154,22 +157,24 @@ class _WritePageState extends State<WritePage> {
 
   Widget _buildRichTextEditor(BuildContext context) {
     var quillEditor = QuillEditor(
-      controller: _controller,
       scrollController: ScrollController(),
-      scrollable: true,
       focusNode: FocusNode(),
-      autoFocus: false,
-      readOnly: false,
-      placeholder: 'Write here...',
-      expands: false,
-      padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
-      textCapitalization: TextCapitalization.sentences,
-      customStyles: DefaultStyles(
-        paragraph: DefaultTextBlockStyle(
-          Theme.of(context).textTheme.bodyText1!,
-          const Tuple2(0, 0),
-          const Tuple2(0, 0),
-          null,
+      configurations: QuillEditorConfigurations(
+        controller: _controller,
+        scrollable: true,
+        autoFocus: false,
+        readOnly: false,
+        placeholder: 'Write here...',
+        expands: false,
+        padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+        textCapitalization: TextCapitalization.sentences,
+        customStyles: DefaultStyles(
+          paragraph: DefaultTextBlockStyle(
+            Theme.of(context).textTheme.bodyText1!,
+            const VerticalSpacing(0, 0),
+            const VerticalSpacing(0, 0),
+            null,
+          ),
         ),
       ),
     );
