@@ -6,7 +6,6 @@ import 'package:flutter_quill/flutter_quill.dart' hide Text;
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/firestore_service.dart';
-import 'package:tuple/tuple.dart';
 import 'package:provider/provider.dart';
 
 class WritePage extends StatefulWidget {
@@ -18,8 +17,8 @@ class WritePage extends StatefulWidget {
     required this.userId,
     required this.ideaId,
     required this.initialIdea,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<WritePage> createState() => _WritePageState();

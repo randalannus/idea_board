@@ -5,7 +5,7 @@ import 'package:idea_board/service/auth_service.dart';
 import 'package:idea_board/ui/widgets/confimation_dialog.dart';
 
 class SignInPage extends StatelessWidget {
-  const SignInPage({Key? key}) : super(key: key);
+  const SignInPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class SignInPage extends StatelessWidget {
 }
 
 class SignInButtons extends StatefulWidget {
-  const SignInButtons({Key? key}) : super(key: key);
+  const SignInButtons({super.key});
 
   @override
   State<SignInButtons> createState() => _SignInButtonsState();

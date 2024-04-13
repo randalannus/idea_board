@@ -5,11 +5,10 @@ import 'package:idea_board/model/user.dart';
 import 'package:idea_board/ui/pages/write_page.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:provider/provider.dart';
-import 'package:tuple/tuple.dart';
 
 class IdeaCard extends StatelessWidget {
   final Idea idea;
-  const IdeaCard({required this.idea, Key? key}) : super(key: key);
+  const IdeaCard({required this.idea, super.key});
 
   @override
   Widget build(BuildContext context) {
