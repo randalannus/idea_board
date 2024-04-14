@@ -1,6 +1,5 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
-import 'package:idea_board/legacy/ideas.dart';
 import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/auth_service.dart';
 import 'package:idea_board/themes.dart';
@@ -16,7 +15,6 @@ class IdeaBoardApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => IdeasProvider()),
         StreamProvider<User?>.value(
           value: AuthService.userChanges(),
           initialData: AuthService.currentUser,

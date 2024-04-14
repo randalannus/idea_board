@@ -11,8 +11,6 @@ dependencies:
   flutter:
     sdk: flutter
   provider: ^6.0.3
-  sqflite:
-  path:
   uuid: ^4.4.0
   google_fonts: ^6.2.1
   tiktoklikescroller: ^0.2.3
