@@ -1,6 +1,5 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
-import 'package:idea_board/legacy/ideas.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/auth_service.dart';
@@ -31,12 +30,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _activePage = pageNumber;
     });
-  }
-
-  @override
-  void initState() {
-    _tryTransferIdeas(context);
-    super.initState();
   }
 
   @override
@@ -124,37 +117,6 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-  }
-
-  /// Script for copying all ideas from the local SQL databse to Firestore.
-  /// All ideas are deleted from the SQL database.
-  Future<void> _tryTransferIdeas(BuildContext context) async {
-    var provider = Provider.of<IdeasProvider>(context, listen: false);
-    User user = Provider.of<User>(context, listen: false);
-    bool canTransfer = await provider.canTransferIdeas();
-    if (!canTransfer) return;
-
-    var ideas = await provider.listIdeas();
-    for (var idea in ideas) {
-      var newIdea = await FirestoreService.newIdea(user.uid);
-      await FirestoreService.editIdeaText(
-          user.uid, newIdea.id, idea.plainText, null);
-      if (idea.isArchived) {
-        await FirestoreService.archiveIdea(user.uid, newIdea.id);
-      }
-      await FirestoreService.setIdeaLastRecommended(
-        userId: user.uid,
-        ideaId: newIdea.id,
-        lastRecommended: idea.lastRecommended,
-      );
-      // ignore: deprecated_member_use_from_same_package
-      await FirestoreService.setIdeaCreatedAt(
-        userId: user.uid,
-        ideaId: newIdea.id,
-        createdAt: idea.createdAt,
-      );
-    }
-    await provider.deleteAllIdeas();
   }
 }
 
