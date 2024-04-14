@@ -5,6 +5,7 @@ import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/auth_service.dart';
 import 'package:idea_board/service/feed_provider.dart';
 import 'package:idea_board/service/firestore_service.dart';
+import 'package:idea_board/ui/pages/chat_page.dart';
 import 'package:idea_board/ui/pages/feed_page.dart';
 import 'package:idea_board/ui/pages/list_page.dart';
 import 'package:idea_board/ui/pages/write_page.dart';
@@ -22,12 +23,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   static const feedPageIndex = 0;
   static const listPageIndex = 1;
+  static const chatPageIndex = 2;
 
   int _activePage = listPageIndex;
+  int _prevPage = listPageIndex;
   FeedProvider? feedProvider;
 
   void _setPage(int pageNumber) {
     setState(() {
+      _prevPage = _activePage;
       _activePage = pageNumber;
     });
   }
@@ -51,11 +55,6 @@ class _HomePageState extends State<HomePage> {
       ],
       child: Scaffold(
         appBar: topAppBar(),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _fabPressed(context),
-          child: const Icon(Icons.add),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         bottomNavigationBar: bottomAppBar(),
         body: body(context),
       ),
@@ -78,11 +77,18 @@ class _HomePageState extends State<HomePage> {
             onPressed: () => _setPage(feedPageIndex),
             icon: const Icon(Icons.home_filled),
           ),
-          const SizedBox.shrink(),
           IconButton(
             onPressed: () => _setPage(listPageIndex),
             icon: const Icon(Icons.list),
-          )
+          ),
+          IconButton(
+            onPressed: () => _setPage(chatPageIndex),
+            icon: const Icon(Icons.chat),
+          ),
+          FloatingActionButton(
+            onPressed: () => _fabPressed(context),
+            child: const Icon(Icons.add),
+          ),
         ],
       ),
     );
@@ -90,7 +96,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget body(BuildContext context) {
     return MyPageTransitionSwitcher(
-      reverse: _activePage == feedPageIndex,
+      reverse: _activePage < _prevPage,
       transitionType: SharedAxisTransitionType.horizontal,
       child: pageContent(_activePage),
     );
@@ -99,6 +105,7 @@ class _HomePageState extends State<HomePage> {
   Widget pageContent(int pageIndex) {
     if (pageIndex == feedPageIndex) return const FeedPage();
     if (pageIndex == listPageIndex) return const ListPage();
+    if (pageIndex == chatPageIndex) return ChatPage();
     throw "Invalid page index";
   }
 
