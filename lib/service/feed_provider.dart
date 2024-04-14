@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:idea_board/model/user.dart';
-import 'package:idea_board/service/firestore_service.dart';
+import 'package:idea_board/service/ideas_service.dart';
 import 'package:idea_board/model/idea.dart';
 
 class FeedProvider with ChangeNotifier {
@@ -99,7 +99,7 @@ class FeedProvider with ChangeNotifier {
   /// Update the lastRecommended field on Firestore to prioritize ideas that
   /// have not beed recommended recently.
   Future<void> _updateRecomendationIndex(int position) {
-    return FirestoreService.setIdeaLastRecommended(
+    return IdeasService.setIdeaLastRecommended(
       userId: user.uid,
       ideaId: feed[position],
       lastRecommended: _biggestRecommendationIndex() + 1,

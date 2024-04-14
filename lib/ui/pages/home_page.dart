@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/auth_service.dart';
+import 'package:idea_board/service/chat_service.dart';
 import 'package:idea_board/service/feed_provider.dart';
-import 'package:idea_board/service/firestore_service.dart';
+import 'package:idea_board/service/ideas_service.dart';
 import 'package:idea_board/ui/pages/chat_page.dart';
 import 'package:idea_board/ui/pages/feed_page.dart';
 import 'package:idea_board/ui/pages/list_page.dart';
@@ -43,13 +44,14 @@ class _HomePageState extends State<HomePage> {
     return MultiProvider(
       providers: [
         Provider<User>.value(value: user),
+        Provider<ChatService>(create: ((_) => ChatService(user: user))),
         StreamProvider<List<Idea>>.value(
-          value: FirestoreService.ideasListStream(user.uid),
+          value: IdeasService.ideasListStream(user.uid),
           initialData: const [],
           catchError: (context, error) => [],
         ),
         ChangeNotifierProvider<FeedProvider>(create: (context) {
-          var ideasStream = FirestoreService.ideasListStream(user.uid);
+          var ideasStream = IdeasService.ideasListStream(user.uid);
           return FeedProvider(user, ideasStream);
         })
       ],
@@ -105,13 +107,13 @@ class _HomePageState extends State<HomePage> {
   Widget pageContent(int pageIndex) {
     if (pageIndex == feedPageIndex) return const FeedPage();
     if (pageIndex == listPageIndex) return const ListPage();
-    if (pageIndex == chatPageIndex) return ChatPage();
+    if (pageIndex == chatPageIndex) return const ChatPage();
     throw "Invalid page index";
   }
 
   Future<void> _fabPressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
-    Idea idea = await FirestoreService.newIdea(user.uid);
+    Idea idea = await IdeasService.newIdea(user.uid);
 
     if (!mounted) return; // avoid passing BuildContext across sync gaps
     await Navigator.push(
