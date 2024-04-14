@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' hide Text;
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/firestore_service.dart';
@@ -46,11 +46,8 @@ class _WritePageState extends State<WritePage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        _saver.save();
-        return true;
-      },
+    return PopScope(
+      onPopInvoked: (_) => _saver.save(),
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Edit Idea"),
@@ -113,7 +110,6 @@ class _WritePageState extends State<WritePage> {
   }
 
   Widget _buildEditorToolbar(BuildContext context) {
-    var theme = Theme.of(context);
     var toolbar = QuillToolbar.simple(
       configurations: QuillSimpleToolbarConfigurations(
         controller: _controller,
@@ -136,18 +132,11 @@ class _WritePageState extends State<WritePage> {
         showBackgroundColorButton: false,
         showStrikeThrough: false,
         showRedo: false,
-        //toolbarIconSize: 24,
+        showSubscript: false,
+        showSuperscript: false,
         toolbarSectionSpacing: 2,
         showDividers: false,
-        buttonOptions: const QuillSimpleToolbarButtonOptions(
-            base: QuillToolbarBaseButtonOptions(
-                /*iconTheme: QuillIconTheme(
-            iconSelectedColor: theme.canvasColor,
-            iconSelectedFillColor: theme.iconTheme.color,
-            iconUnselectedColor: theme.iconTheme.color,
-            iconUnselectedFillColor: Colors.transparent,
-          ),*/
-                )),
+        buttonOptions: const QuillSimpleToolbarButtonOptions(),
       ),
     );
 
@@ -169,7 +158,7 @@ class _WritePageState extends State<WritePage> {
         textCapitalization: TextCapitalization.sentences,
         customStyles: DefaultStyles(
           paragraph: DefaultTextBlockStyle(
-            Theme.of(context).textTheme.bodyText1!,
+            Theme.of(context).textTheme.bodyLarge!,
             const VerticalSpacing(0, 0),
             const VerticalSpacing(0, 0),
             null,

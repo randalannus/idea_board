@@ -21,7 +21,7 @@ class ListPage extends StatelessWidget {
   }
 
   Widget ideasListView(List<Idea> unarchivedIdeas) {
-    const double sepHeight = 8;
+    const double sepHeight = 4;
     return Scrollbar(
       radius: const Radius.circular(20),
       child: ListView.separated(
