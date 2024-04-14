@@ -14,7 +14,7 @@ import 'package:idea_board/ui/widgets/transition_switcher.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -162,7 +162,7 @@ class MenuButton extends StatefulWidget {
   static const signOutValue = "signOut";
   static const deleteAccountValue = "deleteAccount";
 
-  const MenuButton({Key? key}) : super(key: key);
+  const MenuButton({super.key});
 
   @override
   State<MenuButton> createState() => _MenuButtonState();

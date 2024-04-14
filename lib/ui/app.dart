@@ -10,7 +10,7 @@ import 'package:idea_board/ui/widgets/transition_switcher.dart';
 import 'package:provider/provider.dart';
 
 class IdeaBoardApp extends StatelessWidget {
-  const IdeaBoardApp({Key? key}) : super(key: key);
+  const IdeaBoardApp({super.key});
 
   @override
   Widget build(BuildContext context) {

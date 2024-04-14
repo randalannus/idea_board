@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:idea_board/model/idea.dart';
 
 class ListPage extends StatelessWidget {
-  const ListPage({Key? key}) : super(key: key);
+  const ListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,13 +21,13 @@ class ListPage extends StatelessWidget {
   }
 
   Widget ideasListView(List<Idea> unarchivedIdeas) {
-    const double sepHeight = 8;
+    const double sepHeight = 4;
     return Scrollbar(
       radius: const Radius.circular(20),
       child: ListView.separated(
         key: const PageStorageKey("ideasList"),
-        itemCount: unarchivedIdeas.length +
-            2, // Add separators to the beginning and end
+        // Add separators to the beginning and end
+        itemCount: unarchivedIdeas.length + 2,
         itemBuilder: (context, index) {
           if (index == 0 || index == unarchivedIdeas.length + 1) {
             return const SizedBox();

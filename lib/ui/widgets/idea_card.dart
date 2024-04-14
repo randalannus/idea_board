@@ -5,11 +5,10 @@ import 'package:idea_board/model/user.dart';
 import 'package:idea_board/ui/pages/write_page.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:provider/provider.dart';
-import 'package:tuple/tuple.dart';
 
 class IdeaCard extends StatelessWidget {
   final Idea idea;
-  const IdeaCard({required this.idea, Key? key}) : super(key: key);
+  const IdeaCard({required this.idea, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,26 +26,30 @@ class IdeaCard extends StatelessWidget {
   Widget closedBuilder(BuildContext context, VoidCallback openContainer) {
     return InkWell(
       onTap: openContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 50),
-          child: AbsorbPointer(
-            child: quill.QuillEditor(
-              controller: createQuillController(idea),
-              scrollController: ScrollController(),
-              scrollable: false,
-              focusNode: FocusNode(),
-              autoFocus: false,
-              readOnly: true,
-              expands: false,
-              padding: EdgeInsets.zero,
-              customStyles: quill.DefaultStyles(
-                paragraph: quill.DefaultTextBlockStyle(
-                  Theme.of(context).textTheme.bodyText2!,
-                  const Tuple2(0, 0),
-                  const Tuple2(0, 0),
-                  null,
+      child: Card.outlined(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 50),
+            child: AbsorbPointer(
+              child: quill.QuillEditor(
+                scrollController: ScrollController(),
+                focusNode: FocusNode(),
+                configurations: quill.QuillEditorConfigurations(
+                  controller: createQuillController(idea),
+                  scrollable: false,
+                  autoFocus: false,
+                  readOnly: true,
+                  expands: false,
+                  padding: EdgeInsets.zero,
+                  customStyles: quill.DefaultStyles(
+                    paragraph: quill.DefaultTextBlockStyle(
+                      Theme.of(context).textTheme.bodyMedium!,
+                      const quill.VerticalSpacing(0, 0),
+                      const quill.VerticalSpacing(0, 0),
+                      null,
+                    ),
+                  ),
                 ),
               ),
             ),
