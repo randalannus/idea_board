@@ -1,9 +1,14 @@
-const functions = require("firebase-functions");
+const { onRequest } = require("firebase-functions/v2/https");
+const { defineSecret } = require('firebase-functions/params');
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-exports.helloWorld = functions.https.onRequest((request, response) => {
-  functions.logger.info("Hello logs!", {structuredData: true});
-  response.send("Hello from Firebase!");
-});
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+const googleAiApiKey = defineSecret("GOOGLE_AI_API_KEY");
+
+
+exports.test = onRequest(
+  { secrets: [googleAiApiKey] },
+  (req, res) => {
+    res.status(200).send(googleAiApiKey.value());
+  }
+)
