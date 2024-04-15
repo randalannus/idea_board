@@ -1,19 +1,44 @@
 {
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
+  "firestore":{
+     "rules":"firestore.rules",
+     "indexes":"firestore.indexes.json"
   },
-  "emulators": {
-    "auth": {
-      "host": "0.0.0.0",
-      "port": 9099
-    },
-    "firestore": {
-      "host": "0.0.0.0",
-      "port": 8080
-    },
-    "ui": {
-      "enabled": true
-    }
+  "emulators":{
+     "auth":{
+        "host":"0.0.0.0",
+        "port":9099
+     },
+     "firestore":{
+        "host":"0.0.0.0",
+        "port":8080
+     },
+     "ui":{
+        "enabled":true
+     }
+  },
+  "functions":{
+     "predeploy":[
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+     ]
+  },
+  "flutter":{
+     "platforms":{
+        "android":{
+           "default":{
+              "projectId":"mind-boxes",
+              "appId":"1:1023311527913:android:2bec2a72b95f7fe9ce9578",
+              "fileOutput":"android/app/google-services.json"
+           }
+        },
+        "dart":{
+           "lib/firebase_options.dart":{
+              "projectId":"mind-boxes",
+              "configurations":{
+                 "android":"1:1023311527913:android:2bec2a72b95f7fe9ce9578",
+                 "ios":"1:1023311527913:ios:d5744af7bfdb11aace9578"
+              }
+           }
+        }
+     }
   }
 }
