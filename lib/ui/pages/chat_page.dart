@@ -47,7 +47,7 @@ class _ChatPageState extends State<ChatPage> {
     return chat.DefaultChatTheme(
       backgroundColor: colorScheme.background,
       primaryColor: colorScheme.primary,
-      secondaryColor: colorScheme.secondary,
+      secondaryColor: colorScheme.secondaryContainer,
       errorColor: colorScheme.error,
       inputSurfaceTintColor: colorScheme.surfaceTint,
       inputBackgroundColor: colorScheme.background,
@@ -79,7 +79,7 @@ class _ChatPageState extends State<ChatPage> {
           (chatMsg) => types.TextMessage(
             id: chatMsg.uid,
             text: chatMsg.text,
-            createdAt: chatMsg.createdAt.toUtc().millisecondsSinceEpoch,
+            createdAt: chatMsg.createdAt?.toUtc().millisecondsSinceEpoch,
             author: types.User(id: chatMsg.by.name),
             type: types.MessageType.text,
           ),

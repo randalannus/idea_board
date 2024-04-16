@@ -30,9 +30,11 @@ class ChatService {
       uid: uid,
       text: text,
       by: SenderType.user,
-      createdAt: DateTime.now(),
+      writing: false,
     );
-    await _messagesColRef().doc(uid).set(message.toFirestore());
+    final firestoreMap = message.toFirestore();
+    firestoreMap[ChatMessage.fCreatedAt] = FieldValue.serverTimestamp();
+    await _messagesColRef().doc(uid).set(firestoreMap);
   }
 
   CollectionReference<Map<String, dynamic>> _messagesColRef() {

@@ -15,7 +15,8 @@
   "dependencies": {
     "firebase-admin": "^10.0.2",
     "firebase-functions": "^4.9.0",
-    "openai": "^4.34.0"
+    "openai": "^4.34.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "firebase-functions-test": "^0.2.0"
