@@ -18,6 +18,7 @@ exports.botreply = onDocumentCreated(
   {
     document: "/users/{userId}/chats/{chatId}/messages/{messageId}",
     region: "europe-west3",
+    secrets: [openAIApiKey],
   },
   async (event) => {
     const userMessage = event.data.data();
