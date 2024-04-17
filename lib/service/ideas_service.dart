@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:uuid/uuid.dart';
 
-class FirestoreService {
+class IdeasService {
   static const cUsers = "users";
   static const cIdeas = "ideas";
 
@@ -73,16 +73,6 @@ class FirestoreService {
     required int? lastRecommended,
   }) async {
     var map = {Idea.fLastRecommended: lastRecommended};
-    await _ideasColRef(userId).doc(ideaId).update(map);
-  }
-
-  @Deprecated("Only used to transfer ideas from local SQL database")
-  static Future<void> setIdeaCreatedAt({
-    required String userId,
-    required String ideaId,
-    required DateTime createdAt,
-  }) async {
-    var map = {Idea.fCreatedAt: createdAt};
     await _ideasColRef(userId).doc(ideaId).update(map);
   }
 

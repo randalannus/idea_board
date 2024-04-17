@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/auth_service.dart';
+import 'package:idea_board/service/chat_service.dart';
 import 'package:idea_board/service/feed_provider.dart';
-import 'package:idea_board/service/firestore_service.dart';
+import 'package:idea_board/service/ideas_service.dart';
+import 'package:idea_board/ui/pages/chat_page.dart';
 import 'package:idea_board/ui/pages/feed_page.dart';
 import 'package:idea_board/ui/pages/list_page.dart';
 import 'package:idea_board/ui/pages/write_page.dart';
@@ -22,12 +24,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   static const feedPageIndex = 0;
   static const listPageIndex = 1;
+  static const chatPageIndex = 2;
 
   int _activePage = listPageIndex;
+  int _prevPage = listPageIndex;
   FeedProvider? feedProvider;
 
   void _setPage(int pageNumber) {
     setState(() {
+      _prevPage = _activePage;
       _activePage = pageNumber;
     });
   }
@@ -39,23 +44,19 @@ class _HomePageState extends State<HomePage> {
     return MultiProvider(
       providers: [
         Provider<User>.value(value: user),
+        Provider<ChatService>(create: ((_) => ChatService(user: user))),
         StreamProvider<List<Idea>>.value(
-          value: FirestoreService.ideasListStream(user.uid),
+          value: IdeasService.ideasListStream(user.uid),
           initialData: const [],
           catchError: (context, error) => [],
         ),
         ChangeNotifierProvider<FeedProvider>(create: (context) {
-          var ideasStream = FirestoreService.ideasListStream(user.uid);
+          var ideasStream = IdeasService.ideasListStream(user.uid);
           return FeedProvider(user, ideasStream);
         })
       ],
       child: Scaffold(
         appBar: topAppBar(),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _fabPressed(context),
-          child: const Icon(Icons.add),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         bottomNavigationBar: bottomAppBar(),
         body: body(context),
       ),
@@ -78,11 +79,18 @@ class _HomePageState extends State<HomePage> {
             onPressed: () => _setPage(feedPageIndex),
             icon: const Icon(Icons.home_filled),
           ),
-          const SizedBox.shrink(),
           IconButton(
             onPressed: () => _setPage(listPageIndex),
             icon: const Icon(Icons.list),
-          )
+          ),
+          IconButton(
+            onPressed: () => _setPage(chatPageIndex),
+            icon: const Icon(Icons.chat),
+          ),
+          FloatingActionButton(
+            onPressed: () => _fabPressed(context),
+            child: const Icon(Icons.add),
+          ),
         ],
       ),
     );
@@ -90,7 +98,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget body(BuildContext context) {
     return MyPageTransitionSwitcher(
-      reverse: _activePage == feedPageIndex,
+      reverse: _activePage < _prevPage,
       transitionType: SharedAxisTransitionType.horizontal,
       child: pageContent(_activePage),
     );
@@ -99,12 +107,13 @@ class _HomePageState extends State<HomePage> {
   Widget pageContent(int pageIndex) {
     if (pageIndex == feedPageIndex) return const FeedPage();
     if (pageIndex == listPageIndex) return const ListPage();
+    if (pageIndex == chatPageIndex) return const ChatPage();
     throw "Invalid page index";
   }
 
   Future<void> _fabPressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
-    Idea idea = await FirestoreService.newIdea(user.uid);
+    Idea idea = await IdeasService.newIdea(user.uid);
 
     if (!mounted) return; // avoid passing BuildContext across sync gaps
     await Navigator.push(

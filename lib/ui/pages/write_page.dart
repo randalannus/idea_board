@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/model/user.dart';
-import 'package:idea_board/service/firestore_service.dart';
+import 'package:idea_board/service/ideas_service.dart';
 import 'package:provider/provider.dart';
 
 class WritePage extends StatefulWidget {
@@ -173,7 +173,7 @@ class _WritePageState extends State<WritePage> {
   Future<void> _onArchivePressed(BuildContext context) async {
     User user = Provider.of<User>(context, listen: false);
     Navigator.of(context).pop();
-    await FirestoreService.archiveIdea(user.uid, widget.ideaId);
+    await IdeasService.archiveIdea(user.uid, widget.ideaId);
   }
 }
 
@@ -226,7 +226,7 @@ class Saver {
   Future<void> save() async {
     _timer?.cancel();
     try {
-      await FirestoreService.editIdeaText(
+      await IdeasService.editIdeaText(
         userId,
         ideaId,
         controller.document.toPlainText(),

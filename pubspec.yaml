@@ -25,6 +25,7 @@ dependencies:
   flutter_quill: ^9.3.6
   tuple: ^2.0.0
   shared_preferences: ^2.0.15
+  flutter_chat_ui: ^1.6.12
 
 flutter_launcher_icons:
   android: "launcher_icon"
