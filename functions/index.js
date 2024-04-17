@@ -61,14 +61,17 @@ exports.botreply = onDocumentCreated(
 });
 
 const systemPrompt = `You are a helpful assistant.
-You have access to the whole database of ideas (think of them as notes) written by the user.
+You have access to all ideas (think of them as notes) written by the user.
 Make reference to these ideas if you see useful or if asked by the user.
-If you do reference an idea, then explain why you see this idea being relevant in this case.`;
+If you do reference an idea, then explain why you see the idea being relevant in this case.
+Be concise and straight to the point in your answers.
+If the user asks you to list ideas, then list at least 3 or more if relevant.`;
 
 async function getCompletionStream(userMessage, userId, chatId) {
-  const snapshot = await db.collection(`users/${userId}/ideas`).get();
+  // Give all ideas as input to the chatbot
+  const ideasSnap = await db.collection(`users/${userId}/ideas`).get();
   var ideasPrompt = "";
-  snapshot.forEach(doc => {
+  ideasSnap.forEach(doc => {
     text = doc.data()["text"]
     if (typeof text === 'undefined') {
       return;
@@ -78,13 +81,32 @@ async function getCompletionStream(userMessage, userId, chatId) {
     ideasPrompt += "\n\n";
   });
 
+  // Get the previous chat history
+  const messagesSnap = await db.collection(`users/${userId}/chats/${chatId}/messages`).get();
+  const parsedMessages = [];
+  messagesSnap.forEach(doc => {
+    data = doc.data()
+    parsedMessages.push({
+      "role": data["by"] == "user" ? "user" : "assistant",
+      "content": data["text"]
+    })
+  });
+
+  // Append the user message if it is not the last one for some reason
+  if (parsedMessages.at(-1)["role"] != "user") {
+    parsedMessages.push({
+      "role": "user",
+      "content": userMessage.text
+    })
+  }
+
   const openai = new OpenAI({ apiKey: openAIApiKey.value() });
   const completion = await openai.chat.completions.create({
     model: "gpt-4-turbo-2024-04-09",
     messages: [
       {"role": "system", "content": systemPrompt},
       {"role": "system", "content": ideasPrompt},
-      {"role": "user", "content": userMessage.text}
+      ...parsedMessages
     ],
     stream: true,
   });
