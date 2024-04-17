@@ -30,7 +30,7 @@ class ListPage extends StatelessWidget {
         itemCount: unarchivedIdeas.length + 2,
         itemBuilder: (context, index) {
           if (index == 0 || index == unarchivedIdeas.length + 1) {
-            return const SizedBox();
+            return const SizedBox(height: 2 * sepHeight);
           }
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),

@@ -56,43 +56,43 @@ class _HomePageState extends State<HomePage> {
         })
       ],
       child: Scaffold(
-        appBar: topAppBar(),
+        endDrawer: const SettingsDrawer(),
+        drawerEdgeDragWidth: 0,
         bottomNavigationBar: bottomAppBar(),
-        body: body(context),
+        body: SafeArea(child: body(context)),
       ),
-    );
-  }
-
-  PreferredSizeWidget topAppBar() {
-    return AppBar(
-      title: const Text("Ideas"),
-      actions: const [MenuButton()],
     );
   }
 
   Widget bottomAppBar() {
     return BottomAppBar(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          IconButton(
-            onPressed: () => _setPage(feedPageIndex),
-            icon: const Icon(Icons.home_filled),
-          ),
-          IconButton(
-            onPressed: () => _setPage(listPageIndex),
-            icon: const Icon(Icons.list),
-          ),
-          IconButton(
-            onPressed: () => _setPage(chatPageIndex),
-            icon: const Icon(Icons.chat),
-          ),
-          FloatingActionButton(
-            onPressed: () => _fabPressed(context),
-            child: const Icon(Icons.add),
-          ),
-        ],
-      ),
+      child: Builder(builder: (context) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              onPressed: () => _setPage(feedPageIndex),
+              icon: const Icon(Icons.home_filled),
+            ),
+            IconButton(
+              onPressed: () => _setPage(listPageIndex),
+              icon: const Icon(Icons.list),
+            ),
+            FloatingActionButton(
+              onPressed: () => _fabPressed(context),
+              child: const Icon(Icons.add),
+            ),
+            IconButton(
+              onPressed: () => _setPage(chatPageIndex),
+              icon: const Icon(Icons.chat),
+            ),
+            IconButton(
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+              icon: const Icon(Icons.settings),
+            )
+          ],
+        );
+      }),
     );
   }
 
@@ -129,41 +129,37 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class MenuButton extends StatefulWidget {
-  static const signOutValue = "signOut";
-  static const deleteAccountValue = "deleteAccount";
-
-  const MenuButton({super.key});
+class SettingsDrawer extends StatefulWidget {
+  const SettingsDrawer({super.key});
 
   @override
-  State<MenuButton> createState() => _MenuButtonState();
+  State<SettingsDrawer> createState() => _SettingsDrawerState();
 }
 
-class _MenuButtonState extends State<MenuButton> {
+class _SettingsDrawerState extends State<SettingsDrawer> {
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton(
-      icon: Icon(
-        Icons.more_vert,
-        color: Theme.of(context).iconTheme.color,
+    return Drawer(
+      child: SafeArea(
+        child: ListView(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          children: [
+            const ListTile(
+              title: Text("Sign out"),
+              leading: Icon(Icons.logout),
+              onTap: AuthService.signOut,
+            ),
+            ListTile(
+              title: const Text("Delete account"),
+              onTap: () => onDeletePressed(context),
+              leading: const Icon(Icons.delete_forever),
+              iconColor: Theme.of(context).colorScheme.error,
+              textColor: Theme.of(context).colorScheme.error,
+            ),
+          ],
+        ),
       ),
-      itemBuilder: (context) => const [
-        PopupMenuItem(
-          value: MenuButton.signOutValue,
-          child: Text("Sign out"),
-        ),
-        PopupMenuItem(
-          value: MenuButton.deleteAccountValue,
-          child: Text("Delete account"),
-        ),
-      ],
-      onSelected: (value) async {
-        if (value == MenuButton.signOutValue) {
-          await AuthService.signOut();
-        } else if (value == MenuButton.deleteAccountValue) {
-          await onDeletePressed(context);
-        }
-      },
     );
   }
 
