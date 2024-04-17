@@ -36,9 +36,29 @@ class _ChatPageState extends State<ChatPage> {
                 setState(() => _textController.text = text),
             textEditingController: _textController,
           ),
+          typingIndicatorOptions: chat.TypingIndicatorOptions(
+            typingMode: chat.TypingIndicatorMode.name,
+            animationSpeed: const Duration(seconds: 1),
+            customTypingWidget: Text(
+              "Writing",
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            typingUsers: _isTyping(messages)
+                ? const [types.User(id: "bot", firstName: "Bot")]
+                : [],
+          ),
         ),
       ),
     );
+  }
+
+  bool _isTyping(List<ChatMessage> messages) {
+    for (var message in messages) {
+      if (message.writing == true && message.text.isEmpty) {
+        return true;
+      }
+    }
+    return false;
   }
 
   chat.ChatTheme _chatTheme(BuildContext context) {
@@ -75,6 +95,7 @@ class _ChatPageState extends State<ChatPage> {
 
   static List<types.Message> _convertMessages(List<ChatMessage> messages) {
     return messages
+        .where((chatMsg) => chatMsg.text.isNotEmpty || !chatMsg.writing)
         .map<types.Message>(
           (chatMsg) => types.TextMessage(
             id: chatMsg.uid,
