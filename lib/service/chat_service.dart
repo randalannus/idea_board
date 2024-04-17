@@ -20,8 +20,7 @@ class ChatService {
     return _messagesColRef()
         .orderBy(ChatMessage.fCreatedAt, descending: true)
         .snapshots()
-        .map<List<ChatMessage>>((snapshot) => _parseMessages(snapshot.docs))
-        .handleError((_) {});
+        .map<List<ChatMessage>>((snapshot) => _parseMessages(snapshot.docs));
   }
 
   Future<void> sendMessage(String text) async {
