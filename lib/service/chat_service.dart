@@ -16,6 +16,7 @@ class ChatService {
 
   const ChatService({required this.user});
 
+  /// Stream of the chat history for the default chat.
   Stream<List<ChatMessage>> messagesStream() {
     return _messagesColRef()
         .orderBy(ChatMessage.fCreatedAt, descending: true)
@@ -23,6 +24,7 @@ class ChatService {
         .map<List<ChatMessage>>((snapshot) => _parseMessages(snapshot.docs));
   }
 
+  /// Send a user message to the chatbot.
   Future<void> sendMessage(String text) async {
     final uid = uuid.generate();
     final message = ChatMessage(
