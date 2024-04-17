@@ -57,9 +57,9 @@ class _HomePageState extends State<HomePage> {
       ],
       child: Scaffold(
         endDrawer: const SettingsDrawer(),
-        drawerEnableOpenDragGesture: false,
+        drawerEdgeDragWidth: 0,
         bottomNavigationBar: bottomAppBar(),
-        body: body(context),
+        body: SafeArea(child: body(context)),
       ),
     );
   }
@@ -140,23 +140,25 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: ListView(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
-        children: [
-          const ListTile(
-            title: Text("Sign out"),
-            leading: Icon(Icons.logout),
-            onTap: AuthService.signOut,
-          ),
-          ListTile(
-            title: const Text("Delete account"),
-            onTap: () => onDeletePressed(context),
-            leading: const Icon(Icons.delete_forever),
-            iconColor: Theme.of(context).colorScheme.error,
-            textColor: Theme.of(context).colorScheme.error,
-          ),
-        ],
+      child: SafeArea(
+        child: ListView(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          children: [
+            const ListTile(
+              title: Text("Sign out"),
+              leading: Icon(Icons.logout),
+              onTap: AuthService.signOut,
+            ),
+            ListTile(
+              title: const Text("Delete account"),
+              onTap: () => onDeletePressed(context),
+              leading: const Icon(Icons.delete_forever),
+              iconColor: Theme.of(context).colorScheme.error,
+              textColor: Theme.of(context).colorScheme.error,
+            ),
+          ],
+        ),
       ),
     );
   }
