@@ -32,7 +32,7 @@ class ChatMessage {
       : by = map[fBy] == "user" ? SenderType.user : SenderType.bot,
         text = map[fText],
         uid = map[fId],
-        createdAt = (map[fCreatedAt] as Timestamp).toDate(),
+        createdAt = (map[fCreatedAt] as Timestamp?)?.toDate(),
         writing = map[fWriting],
         replyingTo = map[fReplyingTo];
 
