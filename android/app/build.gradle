@@ -57,7 +57,7 @@ android {
     }
 
     defaultConfig {
-        applicationId 'com.prosperity_innovation.idea_board'
+        applicationId 'ai.evenstad.idea_board'
         minSdkVersion 23
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
