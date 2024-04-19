@@ -26,7 +26,7 @@
         "android":{
            "default":{
               "projectId":"mind-boxes",
-              "appId":"1:1023311527913:android:2bec2a72b95f7fe9ce9578",
+              "appId":"1:1023311527913:android:f5a0e71e84e3e388ce9578",
               "fileOutput":"android/app/google-services.json"
            }
         },
@@ -34,7 +34,7 @@
            "lib/firebase_options.dart":{
               "projectId":"mind-boxes",
               "configurations":{
-                 "android":"1:1023311527913:android:2bec2a72b95f7fe9ce9578",
+                 "android":"1:1023311527913:android:f5a0e71e84e3e388ce9578",
                  "ios":"1:1023311527913:ios:d5744af7bfdb11aace9578"
               }
            }

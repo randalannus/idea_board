@@ -1,4 +1,4 @@
-package com.example.idea_board
+package ai.evenstad.idea_board
 
 import io.flutter.embedding.android.FlutterActivity
 
