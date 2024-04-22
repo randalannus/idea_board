@@ -10,12 +10,14 @@ class FeedProvider with ChangeNotifier {
   final Random rng = Random();
 
   final User user;
+  final IdeasService ideasService;
 
   /// List of all ideas for the user.
   final Stream<List<Idea>> ideasStream;
   late final StreamSubscription<List<Idea>> _ideasSub;
 
-  FeedProvider(this.user, this.ideasStream) {
+  FeedProvider(this.user, this.ideasService)
+      : ideasStream = ideasService.ideasListStream() {
     _ideasSub = ideasStream.listen((newIdeas) {
       _updateIdeas(newIdeas);
       if (feed.length < 3 && canRecommend) {
@@ -99,8 +101,7 @@ class FeedProvider with ChangeNotifier {
   /// Update the lastRecommended field on Firestore to prioritize ideas that
   /// have not beed recommended recently.
   Future<void> _updateRecomendationIndex(int position) {
-    return IdeasService.setIdeaLastRecommended(
-      userId: user.uid,
+    return ideasService.setIdeaLastRecommended(
       ideaId: feed[position],
       lastRecommended: _biggestRecommendationIndex() + 1,
     );

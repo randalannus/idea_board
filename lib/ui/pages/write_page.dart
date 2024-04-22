@@ -4,19 +4,18 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:idea_board/model/idea.dart';
-import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/ideas_service.dart';
 import 'package:provider/provider.dart';
 
 class WritePage extends StatefulWidget {
-  final String userId;
   final String ideaId;
   final Idea initialIdea;
+  final IdeasService ideasService;
 
   const WritePage({
-    required this.userId,
     required this.ideaId,
     required this.initialIdea,
+    required this.ideasService,
     super.key,
   });
 
@@ -32,7 +31,7 @@ class _WritePageState extends State<WritePage> {
   @override
   void initState() {
     _controller = createQuillController(widget.initialIdea);
-    _saver = Saver(widget.userId, widget.ideaId, _controller);
+    _saver = Saver(widget.ideasService, widget.ideaId, _controller);
     _changeSub = _controller.document.changes.listen((_) => _saver.notify());
 
     super.initState();
@@ -171,9 +170,8 @@ class _WritePageState extends State<WritePage> {
   }
 
   Future<void> _onArchivePressed(BuildContext context) async {
-    User user = Provider.of<User>(context, listen: false);
     Navigator.of(context).pop();
-    await IdeasService.archiveIdea(user.uid, widget.ideaId);
+    await Provider.of<IdeasService>(context).archiveIdea(widget.ideaId);
   }
 }
 
@@ -202,7 +200,7 @@ QuillController createQuillController(Idea idea) {
 ///
 /// Call [Saver.save] to save immediately and cancel waiting for changes.
 class Saver {
-  final String userId;
+  final IdeasService ideasService;
   final String ideaId;
   final QuillController controller;
   static const delay = Duration(seconds: 2);
@@ -213,7 +211,7 @@ class Saver {
   final _controller = StreamController<SaverState>.broadcast();
   Stream<SaverState> get stateChanges => _controller.stream.distinct();
 
-  Saver(this.userId, this.ideaId, this.controller) {
+  Saver(this.ideasService, this.ideaId, this.controller) {
     _controller.add(state);
   }
 
@@ -226,12 +224,13 @@ class Saver {
   Future<void> save() async {
     _timer?.cancel();
     try {
-      await IdeasService.editIdeaText(
-        userId,
-        ideaId,
-        controller.document.toPlainText(),
-        jsonEncode(controller.document.toDelta().toJson()),
-      ).timeout(const Duration(seconds: 5));
+      await ideasService
+          .editIdeaText(
+            ideaId,
+            controller.document.toPlainText(),
+            jsonEncode(controller.document.toDelta().toJson()),
+          )
+          .timeout(const Duration(seconds: 5));
     } on TimeoutException catch (_) {
       _setState(SaverState.networkError);
       return;

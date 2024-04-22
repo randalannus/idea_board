@@ -27,13 +27,14 @@ class _FeedPageState extends State<FeedPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.jumpToPosition(feedProvider.currentPos);
     });
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {});
 
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    var ideas = Provider.of<List<Idea>>(context);
+    var ideas = Provider.of<List<Idea>>(context, listen: false);
     var feedProvider = Provider.of<FeedProvider>(context);
     if (ideas.isEmpty) {
       return const Center(child: Text("Press + to create an idea"));
@@ -45,7 +46,7 @@ class _FeedPageState extends State<FeedPage> {
       controller: controller,
       builder: (context, index) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: IdeaCard(
             idea: _findIdea(ideas, feedProvider.feed[index]),
           ),

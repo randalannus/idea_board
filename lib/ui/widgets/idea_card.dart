@@ -1,17 +1,22 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'package:idea_board/model/user.dart';
+import 'package:idea_board/service/ideas_service.dart';
 import 'package:idea_board/ui/pages/write_page.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:provider/provider.dart';
 
 class IdeaCard extends StatelessWidget {
   final Idea idea;
-  const IdeaCard({required this.idea, super.key});
+
+  const IdeaCard({
+    required this.idea,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final ideasService = Provider.of<IdeasService>(context, listen: false);
     return OpenContainer(
       closedShape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -19,7 +24,7 @@ class IdeaCard extends StatelessWidget {
       closedElevation: 0,
       closedColor: Theme.of(context).cardColor,
       closedBuilder: closedBuilder,
-      openBuilder: openBuilder,
+      openBuilder: (context, _) => openBuilder(context, ideasService),
     );
   }
 
@@ -27,6 +32,7 @@ class IdeaCard extends StatelessWidget {
     return InkWell(
       onTap: openContainer,
       child: Card.outlined(
+        margin: const EdgeInsets.all(0),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: ConstrainedBox(
@@ -59,12 +65,11 @@ class IdeaCard extends StatelessWidget {
     );
   }
 
-  Widget openBuilder(BuildContext context, VoidCallback openContainer) {
-    User user = Provider.of<User>(context, listen: false);
+  Widget openBuilder(BuildContext context, IdeasService ideasService) {
     return WritePage(
-      userId: user.uid,
       ideaId: idea.id,
       initialIdea: idea,
+      ideasService: ideasService,
     );
   }
 }

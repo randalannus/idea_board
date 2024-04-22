@@ -28,7 +28,6 @@ class _HomePageState extends State<HomePage> {
 
   int _activePage = listPageIndex;
   int _prevPage = listPageIndex;
-  FeedProvider? feedProvider;
 
   void _setPage(int pageNumber) {
     setState(() {
@@ -44,22 +43,34 @@ class _HomePageState extends State<HomePage> {
     return MultiProvider(
       providers: [
         Provider<User>.value(value: user),
-        Provider<ChatService>(create: ((_) => ChatService(user: user))),
-        StreamProvider<List<Idea>>.value(
-          value: IdeasService.ideasListStream(user.uid),
-          initialData: const [],
-          catchError: (context, error) => [],
-        ),
-        ChangeNotifierProvider<FeedProvider>(create: (context) {
-          var ideasStream = IdeasService.ideasListStream(user.uid);
-          return FeedProvider(user, ideasStream);
-        })
+        Provider<IdeasService>.value(value: IdeasService(user: user)),
       ],
-      child: Scaffold(
-        endDrawer: const SettingsDrawer(),
-        drawerEdgeDragWidth: 0,
-        bottomNavigationBar: bottomAppBar(),
-        body: SafeArea(child: body(context)),
+      child: MultiProvider(
+        providers: [
+          Provider<ChatService>(create: (_) => ChatService(user: user)),
+          StreamProvider<List<Idea>>(
+            create: (context) => Provider.of<IdeasService>(
+              context,
+              listen: false,
+            ).ideasListStream(),
+            initialData: const [],
+            catchError: (context, error) => [],
+          ),
+          ChangeNotifierProvider<FeedProvider>(
+            create: (context) {
+              return FeedProvider(
+                user,
+                Provider.of<IdeasService>(context, listen: false),
+              );
+            },
+          ),
+        ],
+        child: Scaffold(
+          endDrawer: const SettingsDrawer(),
+          drawerEdgeDragWidth: 0,
+          bottomNavigationBar: bottomAppBar(),
+          body: SafeArea(child: body(context)),
+        ),
       ),
     );
   }
@@ -112,17 +123,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fabPressed(BuildContext context) async {
-    User user = Provider.of<User>(context, listen: false);
-    Idea idea = await IdeasService.newIdea(user.uid);
+    final ideasService = Provider.of<IdeasService>(context, listen: false);
+    Idea idea = await ideasService.newIdea();
 
     if (!mounted) return; // avoid passing BuildContext across sync gaps
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => WritePage(
-          userId: user.uid,
           ideaId: idea.id,
           initialIdea: idea,
+          ideasService: ideasService,
         ),
       ),
     );
