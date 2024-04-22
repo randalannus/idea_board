@@ -21,7 +21,7 @@ class ListPage extends StatelessWidget {
   }
 
   Widget ideasListView(List<Idea> unarchivedIdeas) {
-    const double sepHeight = 4;
+    const double sepHeight = 8;
     return Scrollbar(
       radius: const Radius.circular(20),
       child: ListView.separated(
@@ -33,7 +33,7 @@ class ListPage extends StatelessWidget {
             return const SizedBox(height: 2 * sepHeight);
           }
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: IdeaCard(idea: unarchivedIdeas[index - 1]),
           );
         },

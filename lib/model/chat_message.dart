@@ -7,11 +7,13 @@ class ChatMessage {
   static const fCreatedAt = "createdAt";
   static const fReplyingTo = "replyingTo";
   static const fWriting = "writing";
+  static const fReferencedIdeaIds = "referencedIdeaIds";
 
   final String uid;
   final SenderType by;
   final String text;
   final DateTime? createdAt;
+  final List<String> referencedIdeaIds;
 
   /// True if the message is still being written
   final bool writing;
@@ -26,6 +28,7 @@ class ChatMessage {
     required this.writing,
     this.createdAt,
     this.replyingTo,
+    this.referencedIdeaIds = const [],
   });
 
   ChatMessage.fromFirestore(Map<String, dynamic> map)
@@ -34,7 +37,11 @@ class ChatMessage {
         uid = map[fId],
         createdAt = (map[fCreatedAt] as Timestamp?)?.toDate(),
         writing = map[fWriting],
-        replyingTo = map[fReplyingTo];
+        replyingTo = map[fReplyingTo],
+        referencedIdeaIds = (map[fReferencedIdeaIds] as List<dynamic>?)
+                ?.map<String>((e) => e.toString())
+                .toList() ??
+            const [];
 
   Map<String, dynamic> toFirestore() {
     return {

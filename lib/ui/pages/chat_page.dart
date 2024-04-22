@@ -3,7 +3,10 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart' as chat;
 // ignore: depend_on_referenced_packages
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:idea_board/model/chat_message.dart';
+import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/service/chat_service.dart';
+import 'package:idea_board/service/ideas_service.dart';
+import 'package:idea_board/ui/widgets/idea_card.dart';
 import 'package:provider/provider.dart';
 
 class ChatPage extends StatefulWidget {
@@ -27,6 +30,7 @@ class _ChatPageState extends State<ChatPage> {
       child: Consumer<List<ChatMessage>>(
         builder: (context, messages, _) => chat.Chat(
           messages: _convertMessages(messages),
+          customMessageBuilder: _customMessageBuilder,
           onSendPressed: (partialText) =>
               chatService.sendMessage(partialText.text),
           user: const types.User(id: "user"),
@@ -52,13 +56,29 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  Widget _customMessageBuilder(types.CustomMessage message,
+      {required int messageWidth}) {
+    return MyTextMessage(
+      emojiEnlargementBehavior: chat.EmojiEnlargementBehavior.multi,
+      hideBackgroundOnEmojiMessages: true,
+      message: types.TextMessage(
+        author: message.author,
+        id: message.id,
+        text: message.metadata?[ChatMessage.fText],
+      ),
+      showName: false,
+      usePreviewData: false,
+      referencedIdeaIds:
+          message.metadata?[ChatMessage.fReferencedIdeaIds] ?? const [],
+      writing: message.metadata?[ChatMessage.fWriting] ?? false,
+    );
+  }
+
   bool _isTyping(List<ChatMessage> messages) {
-    for (var message in messages) {
-      if (message.writing == true && message.text.isEmpty) {
-        return true;
-      }
-    }
-    return false;
+    messages = messages.where((msg) => msg.by == SenderType.bot).toList();
+    if (messages.isEmpty) return false;
+    final last = messages.last;
+    return last.writing && last.text.isEmpty;
   }
 
   chat.ChatTheme _chatTheme(BuildContext context) {
@@ -97,14 +117,60 @@ class _ChatPageState extends State<ChatPage> {
     return messages
         .where((chatMsg) => chatMsg.text.isNotEmpty || !chatMsg.writing)
         .map<types.Message>(
-          (chatMsg) => types.TextMessage(
+      (chatMsg) {
+        if (chatMsg.by == SenderType.user) {
+          return types.TextMessage(
             id: chatMsg.uid,
             text: chatMsg.text,
             createdAt: chatMsg.createdAt?.toUtc().millisecondsSinceEpoch,
             author: types.User(id: chatMsg.by.name),
             type: types.MessageType.text,
-          ),
-        )
-        .toList();
+          );
+        }
+        return types.CustomMessage(
+          id: chatMsg.uid,
+          author: types.User(id: chatMsg.by.name),
+          metadata: {
+            ChatMessage.fText: chatMsg.text,
+            ChatMessage.fReferencedIdeaIds: chatMsg.referencedIdeaIds,
+            ChatMessage.fWriting: chatMsg.writing,
+          },
+          createdAt: chatMsg.createdAt?.toUtc().millisecondsSinceEpoch,
+        );
+      },
+    ).toList();
+  }
+}
+
+class MyTextMessage extends chat.TextMessage {
+  final List<String> referencedIdeaIds;
+  final bool writing;
+
+  const MyTextMessage({
+    required super.emojiEnlargementBehavior,
+    required super.hideBackgroundOnEmojiMessages,
+    required super.message,
+    required super.showName,
+    required super.usePreviewData,
+    this.referencedIdeaIds = const [],
+    this.writing = false,
+    super.key,
+  }) : super();
+
+  @override
+  Widget build(BuildContext context) {
+    Container superWidget = super.build(context) as Container;
+    if (referencedIdeaIds.isEmpty || writing) return superWidget;
+
+    final column = superWidget.child as Column;
+    column.children.add(const SizedBox(height: 8));
+    final ideas = Provider.of<List<Idea>>(context, listen: false);
+    for (var ideaId in referencedIdeaIds) {
+      final idea = ideas.where((idea) => idea.id == ideaId).first;
+      column.children.add(IdeaCard(idea: idea));
+      column.children.add(const SizedBox(height: 4));
+    }
+
+    return superWidget;
   }
 }
