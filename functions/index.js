@@ -169,7 +169,7 @@ async function getReferences(responseText, ideas) {
   Please answer with only a json array of the ids, for example ["ABC12", "De23L"].
   If you didn't mention any ideas, then answer with only an empty array [].`
   const completion = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo-0125",
+    model: "gpt-4-turbo-2024-04-09",
     messages: [
       {"role": "system", "content": _ideasPrompt(ideas, aliasMap)},
       {"role": "assistant", "content": responseText},

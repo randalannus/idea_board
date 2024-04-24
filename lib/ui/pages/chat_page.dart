@@ -101,6 +101,10 @@ class _ChatPageState extends State<ChatPage> {
           color: colorScheme.outlineVariant,
         ),
       ),
+      receivedMessageBodyTextStyle: theme.textTheme.bodyMedium!
+          .copyWith(color: colorScheme.onSecondaryContainer),
+      sentMessageBodyTextStyle:
+          theme.textTheme.bodyMedium!.copyWith(color: colorScheme.onPrimary),
       inputPadding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
       inputBorderRadius: BorderRadius.circular(10),
       inputMargin: const EdgeInsets.symmetric(
@@ -167,7 +171,10 @@ class MyTextMessage extends chat.TextMessage {
     final ideas = Provider.of<List<Idea>>(context, listen: false);
     for (var ideaId in referencedIdeaIds) {
       final idea = ideas.where((idea) => idea.id == ideaId).first;
-      column.children.add(IdeaCard(idea: idea));
+      column.children.add(IdeaCard(
+        idea: idea,
+        maxHeight: 100,
+      ));
       column.children.add(const SizedBox(height: 4));
     }
 
