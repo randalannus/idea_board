@@ -8,9 +8,11 @@ import 'package:provider/provider.dart';
 
 class IdeaCard extends StatelessWidget {
   final Idea idea;
+  final double maxHeight;
 
   const IdeaCard({
     required this.idea,
+    this.maxHeight = double.infinity,
     super.key,
   });
 
@@ -36,7 +38,10 @@ class IdeaCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 50),
+            constraints: BoxConstraints(
+              minHeight: 50,
+              maxHeight: maxHeight,
+            ),
             child: AbsorbPointer(
               child: quill.QuillEditor(
                 scrollController: ScrollController(),
