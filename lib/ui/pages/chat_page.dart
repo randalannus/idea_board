@@ -5,7 +5,6 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:idea_board/model/chat_message.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/service/chat_service.dart';
-import 'package:idea_board/service/ideas_service.dart';
 import 'package:idea_board/ui/widgets/idea_card.dart';
 import 'package:provider/provider.dart';
 

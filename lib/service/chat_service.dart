@@ -22,7 +22,7 @@ class ChatService {
         .orderBy(ChatMessage.fCreatedAt, descending: true)
         .snapshots()
         .map<List<ChatMessage>>((snapshot) => _parseMessages(snapshot.docs))
-        .handleError((e) => print(e));
+        .handleError((e) {});
   }
 
   /// Send a user message to the chatbot.
