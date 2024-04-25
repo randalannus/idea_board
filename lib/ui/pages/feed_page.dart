@@ -34,7 +34,7 @@ class _FeedPageState extends State<FeedPage> {
 
   @override
   Widget build(BuildContext context) {
-    var ideas = Provider.of<List<Idea>>(context, listen: false);
+    var ideas = Provider.of<List<Idea>>(context);
     var feedProvider = Provider.of<FeedProvider>(context);
     if (ideas.isEmpty) {
       return const Center(child: Text("Press + to create an idea"));
