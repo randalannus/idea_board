@@ -3,6 +3,7 @@ const {
   Change,
   FirestoreEvent 
 } = require("firebase-functions/v2/firestore");
+const { onObjectFinalized } = require("firebase-functions/v2/storage");
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { defineSecret } = require("firebase-functions/params");
@@ -184,3 +185,32 @@ async function getReferences(responseText, ideas) {
   const jsonArray = JSON.parse(jsonPart.replace(/'/g, '"'));
   return jsonArray.map(alias => {return aliasMap[alias];});
 }
+
+
+
+
+
+
+
+
+
+exports.recordingCreated = onObjectFinalized(
+  {
+    bucket: "mind-boxes.appspot.com",
+    region: "europe-west3",
+    secrets: [openAIApiKey],
+  },
+  (event) => {
+    path = event.data.name;
+    console.log(path);
+    const regex = /^users\/([a-zA-Z0-9]+)\/ideas\/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\/voiceRecordings\/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\.mp4$/;
+    const match = path.match(regex);
+
+    if (match) {
+        const userID = match[1]; // Extracts the user ID
+        const ideaID = match[2]; // Extracts the user ID
+        const fileID = match[3]; // Extracts the file ID (UUID)
+        console.log(`User ID: ${userID}, Idea ID: ${ideaID}, File ID: ${fileID}`);
+    }
+  }
+);
