@@ -243,6 +243,6 @@ async function appendTextToIdea(text, userId, ideaId) {
   const idea = snapshot.data();
 
   await ref.update({
-    text: idea.text == null || idea.text == "" ? text : idea.text + "\n" + text,
+    text: idea.text == null || idea.text == "" ? text : idea.text + "\n\n" + text,
   });
 }

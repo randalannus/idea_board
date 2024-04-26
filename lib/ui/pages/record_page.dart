@@ -4,8 +4,23 @@ import 'package:idea_board/service/ideas_service.dart';
 import 'package:idea_board/service/recorder_service.dart';
 import 'package:provider/provider.dart';
 
-class RecordPage extends StatelessWidget {
+class RecordPage extends StatefulWidget {
   const RecordPage({super.key});
+
+  @override
+  State<RecordPage> createState() => _RecordPageState();
+}
+
+class _RecordPageState extends State<RecordPage> {
+  late final String ideaId;
+
+  @override
+  void initState() {
+    Provider.of<IdeasService>(context, listen: false)
+        .newIdea(isProcessingAudio: false)
+        .then((idea) => ideaId = idea.id);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,15 +71,10 @@ class RecordPage extends StatelessWidget {
                           ),
                         ),
                         onPressed: () async {
-                          final ideasService =
-                              Provider.of<IdeasService>(context, listen: false);
                           if (recorderService.status ==
                               RecordingStatus.recording) {
                             await recorderService.stopRecording();
-                            final idea = await ideasService.newIdea(
-                              isProcessingAudio: true,
-                            );
-                            await recorderService.uploadRecording(idea.id);
+                            await recorderService.uploadRecording(ideaId);
                             return;
                           }
                           await recorderService.startRecording();
