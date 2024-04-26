@@ -47,6 +47,7 @@ class IdeasService {
   /// Archives an idea.
   /// If the idea does not exist, a [FirebaseException] will be thrown.
   Future<void> archiveIdea(String ideaId) async {
+    print("IdeasService.archiveIdea called");
     var map = {Idea.fIsArchived: true};
     await _ideasColRef(user.uid).doc(ideaId).update(map);
   }

@@ -171,7 +171,7 @@ class _WritePageState extends State<WritePage> {
 
   Future<void> _onArchivePressed(BuildContext context) async {
     Navigator.of(context).pop();
-    await Provider.of<IdeasService>(context).archiveIdea(widget.ideaId);
+    await widget.ideasService.archiveIdea(widget.ideaId);
   }
 }
 
