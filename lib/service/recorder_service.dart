@@ -72,15 +72,14 @@ class RecorderService with ChangeNotifier {
     await _recorder.stopRecorder();
     _setStatus(RecordingStatus.stopped);
     await _recorder.closeRecorder();
-    await _uploadRecording();
   }
 
-  Future<void> _uploadRecording() async {
+  Future<void> uploadRecording(String ideaId) async {
     final localPath = await _getLocalPath(_recordingId!);
     final file = File(localPath);
     await _storage
         .ref(
-            "users/${user.uid}/ideas/${const Uuid().v4()}/voiceRecordings/$_recordingId.mp4")
+            "users/${user.uid}/ideas/$ideaId/voiceRecordings/$_recordingId.mp4")
         .putFile(file)
         .whenComplete(() async => await file.delete());
   }

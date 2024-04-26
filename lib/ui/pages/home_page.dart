@@ -50,7 +50,6 @@ class _HomePageState extends State<HomePage> {
       child: MultiProvider(
         providers: [
           Provider<ChatService>(create: (_) => ChatService(user: user)),
-          ChangeNotifierProvider(create: (_) => RecorderService(user: user)),
           StreamProvider<List<Idea>>(
             create: (context) => Provider.of<IdeasService>(
               context,
@@ -93,19 +92,7 @@ class _HomePageState extends State<HomePage> {
               icon: const Icon(Icons.list),
             ),
             InkWell(
-              onLongPress: () {
-                final recorderService =
-                    Provider.of<RecorderService>(context, listen: false);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChangeNotifierProvider.value(
-                      value: recorderService,
-                      child: const RecordPage(),
-                    ),
-                  ),
-                );
-              },
+              onLongPress: () => _openRecordingPage(context),
               child: FloatingActionButton(
                 onPressed: () => _fabPressed(context),
                 child: const Icon(Icons.add),
@@ -152,6 +139,23 @@ class _HomePageState extends State<HomePage> {
           ideaId: idea.id,
           initialIdea: idea,
           ideasService: ideasService,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openRecordingPage(BuildContext context) async {
+    final ideasService = Provider.of<IdeasService>(context, listen: false);
+    final user = Provider.of<User>(context, listen: false);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MultiProvider(
+          providers: [
+            Provider.value(value: ideasService),
+            Provider.value(value: user),
+          ],
+          child: const RecordPage(),
         ),
       ),
     );

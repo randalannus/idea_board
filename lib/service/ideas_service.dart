@@ -1,13 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/model/user.dart';
-import 'package:uuid/uuid.dart';
 
 class IdeasService {
   static const cUsers = "users";
   static const cIdeas = "ideas";
 
-  static const _uuid = Uuid();
   static FirebaseFirestore get _db => FirebaseFirestore.instance;
 
   User user;
@@ -27,18 +25,11 @@ class IdeasService {
   }
 
   /// Creates a new idea.
-  Future<Idea> newIdea() async {
-    final idea = Idea(
-      id: _uuid.v4(),
-      plainText: "",
-      richText: null,
-      createdAt: DateTime.now(),
-      isArchived: false,
-      lastRecommended: null,
-    );
-    await _ideasColRef(user.uid)
-        .doc(idea.id.toString())
-        .set(idea.toFirestore());
+  Future<Idea> newIdea({isProcessingAudio = false}) async {
+    final idea = Idea.createNew(isProcessingAudio: isProcessingAudio);
+    final map = idea.toFirestore();
+    map[Idea.fCreatedAt] = FieldValue.serverTimestamp();
+    await _ideasColRef(user.uid).doc(idea.id).set(map);
     return idea;
   }
 
