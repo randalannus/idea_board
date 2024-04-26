@@ -6,9 +6,11 @@ import 'package:idea_board/service/auth_service.dart';
 import 'package:idea_board/service/chat_service.dart';
 import 'package:idea_board/service/feed_provider.dart';
 import 'package:idea_board/service/ideas_service.dart';
+import 'package:idea_board/service/recorder_service.dart';
 import 'package:idea_board/ui/pages/chat_page.dart';
 import 'package:idea_board/ui/pages/feed_page.dart';
 import 'package:idea_board/ui/pages/list_page.dart';
+import 'package:idea_board/ui/pages/record_page.dart';
 import 'package:idea_board/ui/pages/write_page.dart';
 import 'package:idea_board/ui/widgets/confimation_dialog.dart';
 import 'package:idea_board/ui/widgets/transition_switcher.dart';
@@ -56,14 +58,14 @@ class _HomePageState extends State<HomePage> {
             initialData: const [],
             catchError: (context, error) => [],
           ),
-          ChangeNotifierProvider<FeedProvider>(
-            create: (context) {
-              return FeedProvider(
+          ChangeNotifierProvider(create: (context) {
+            return FeedProvider(
                 user,
-                Provider.of<IdeasService>(context, listen: false),
-              );
-            },
-          ),
+                Provider.of<IdeasService>(
+                  context,
+                  listen: false,
+                ));
+          }),
         ],
         child: Scaffold(
           endDrawer: const SettingsDrawer(),
@@ -89,9 +91,12 @@ class _HomePageState extends State<HomePage> {
               onPressed: () => _setPage(listPageIndex),
               icon: const Icon(Icons.list),
             ),
-            FloatingActionButton(
-              onPressed: () => _fabPressed(context),
-              child: const Icon(Icons.add),
+            InkWell(
+              onLongPress: () => _openRecordingPage(context),
+              child: FloatingActionButton(
+                onPressed: () => _fabPressed(context),
+                child: const Icon(Icons.add),
+              ),
             ),
             IconButton(
               onPressed: () => _setPage(chatPageIndex),
@@ -134,6 +139,23 @@ class _HomePageState extends State<HomePage> {
           ideaId: idea.id,
           initialIdea: idea,
           ideasService: ideasService,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openRecordingPage(BuildContext context) async {
+    final ideasService = Provider.of<IdeasService>(context, listen: false);
+    final user = Provider.of<User>(context, listen: false);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MultiProvider(
+          providers: [
+            Provider.value(value: ideasService),
+            Provider.value(value: user),
+          ],
+          child: const RecordPage(),
         ),
       ),
     );

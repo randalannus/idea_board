@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:idea_board/service/auth_service.dart';
@@ -15,6 +16,7 @@ void main() async {
   if (kDebugMode && fbHost.isNotEmpty) {
     AuthService.useEmulator(fbHost, 9099);
     FirebaseFirestore.instance.useFirestoreEmulator(fbHost, 8080);
+    FirebaseStorage.instance.useStorageEmulator(fbHost, 9199);
   }
   // Force device orientation to vertical
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
