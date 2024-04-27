@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:idea_board/model/idea.dart';
 import 'package:idea_board/service/ideas_service.dart';
-import 'package:provider/provider.dart';
 
 class WritePage extends StatefulWidget {
   final String ideaId;

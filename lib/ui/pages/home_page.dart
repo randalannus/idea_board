@@ -6,11 +6,10 @@ import 'package:idea_board/service/auth_service.dart';
 import 'package:idea_board/service/chat_service.dart';
 import 'package:idea_board/service/feed_provider.dart';
 import 'package:idea_board/service/ideas_service.dart';
-import 'package:idea_board/service/recorder_service.dart';
 import 'package:idea_board/ui/pages/chat_page.dart';
 import 'package:idea_board/ui/pages/feed_page.dart';
 import 'package:idea_board/ui/pages/list_page.dart';
-import 'package:idea_board/ui/pages/record_page.dart';
+import 'package:idea_board/ui/pages/recording_page.dart';
 import 'package:idea_board/ui/pages/write_page.dart';
 import 'package:idea_board/ui/widgets/confimation_dialog.dart';
 import 'package:idea_board/ui/widgets/transition_switcher.dart';
@@ -155,7 +154,7 @@ class _HomePageState extends State<HomePage> {
             Provider.value(value: ideasService),
             Provider.value(value: user),
           ],
-          child: const RecordPage(),
+          child: const RecordingPage(),
         ),
       ),
     );
