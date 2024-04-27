@@ -6,7 +6,6 @@ import 'package:idea_board/service/auth_service.dart';
 import 'package:idea_board/service/chat_service.dart';
 import 'package:idea_board/service/feed_provider.dart';
 import 'package:idea_board/service/ideas_service.dart';
-import 'package:idea_board/service/recorder_service.dart';
 import 'package:idea_board/ui/pages/chat_page.dart';
 import 'package:idea_board/ui/pages/feed_page.dart';
 import 'package:idea_board/ui/pages/list_page.dart';
