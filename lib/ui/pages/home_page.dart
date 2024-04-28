@@ -132,6 +132,7 @@ class _HomePageState extends State<HomePage> {
 
     if (!mounted) return; // avoid passing BuildContext across sync gaps
     await Navigator.push(
+      // ignore: use_build_context_synchronously
       context,
       MaterialPageRoute(
         builder: (context) => WritePage(
@@ -146,7 +147,10 @@ class _HomePageState extends State<HomePage> {
   Future<void> _openRecordingPage(BuildContext context) async {
     final ideasService = Provider.of<IdeasService>(context, listen: false);
     final user = Provider.of<User>(context, listen: false);
+    final idea = await ideasService.newIdea(isProcessingAudio: true);
+    if (!mounted) return;
     Navigator.push(
+      // ignore: use_build_context_synchronously
       context,
       MaterialPageRoute(
         builder: (context) => MultiProvider(
@@ -154,7 +158,7 @@ class _HomePageState extends State<HomePage> {
             Provider.value(value: ideasService),
             Provider.value(value: user),
           ],
-          child: const RecordingPage(),
+          child: RecordingPage(ideaId: idea.id),
         ),
       ),
     );
@@ -211,6 +215,7 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
       await AuthService.deleteCurrentUser();
     } on AuthenticationRequiredException {
       if (!mounted) return;
+      // ignore: use_build_context_synchronously
       await _promptSignOut(context);
     }
   }
