@@ -183,35 +183,50 @@ class _CancelButtonState extends State<CancelButton> {
   Widget build(BuildContext context) {
     return Consumer<RecorderService>(builder: (context, recorderService, _) {
       final theme = Theme.of(context);
-      return IconButton.filled(
-        icon: const Icon(
-          Icons.cancel,
-          size: 50,
+      return PopScope(
+        canPop: recorderService.status == RecordingStatus.stopped,
+        onPopInvoked: (didPop) async {
+          if (didPop) return;
+          final userAccepted = await _confirmDiscard(context);
+          if (!userAccepted || !mounted) return;
+          // ignore: use_build_context_synchronously
+          Navigator.pop(context);
+        },
+        child: IconButton.filled(
+          icon: const Icon(
+            Icons.cancel,
+            size: 50,
+          ),
+          style: IconButton.styleFrom(
+            backgroundColor: theme.colorScheme.error,
+            foregroundColor: theme.colorScheme.onError,
+          ),
+          onPressed: () => _onPressed(context, recorderService),
         ),
-        style: IconButton.styleFrom(
-          backgroundColor: theme.colorScheme.error,
-          foregroundColor: theme.colorScheme.onError,
-        ),
-        onPressed: () => _onPressed(context, recorderService),
       );
     });
   }
 
-  Future<void> _onPressed(BuildContext context, recorderService) async {
+  Future<void> _onPressed(
+      BuildContext context, RecorderService recorderService) async {
     if (recorderService.status != RecordingStatus.stopped) {
-      final userAccepted = await showConfirmationDialog(
-        context: context,
-        dialog: const ConfirmationDialog(
-          title: "Warning",
-          content: "Are you sure you want to discard the recording?",
-          confirmButton: "Discard",
-        ),
-      );
+      final userAccepted = await _confirmDiscard(context);
       if (!userAccepted) return;
       recorderService.stopRecording();
     }
     if (!mounted) return;
     // ignore: use_build_context_synchronously
     Navigator.pop(context);
+  }
+
+  Future<bool> _confirmDiscard(BuildContext context) async {
+    return await showConfirmationDialog(
+      context: context,
+      dialog: const ConfirmationDialog(
+        title: "Warning",
+        content: "Are you sure you want to discard the recording?",
+        confirmButton: "Discard",
+      ),
+    );
   }
 }
