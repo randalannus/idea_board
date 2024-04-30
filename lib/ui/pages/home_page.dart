@@ -128,6 +128,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _fabPressed(BuildContext context) async {
     final ideasService = Provider.of<IdeasService>(context, listen: false);
+    final user = Provider.of<User>(context, listen: false);
     Idea idea = await ideasService.newIdea();
 
     if (!mounted) return; // avoid passing BuildContext across sync gaps
@@ -135,10 +136,15 @@ class _HomePageState extends State<HomePage> {
       // ignore: use_build_context_synchronously
       context,
       MaterialPageRoute(
-        builder: (context) => WritePage(
-          ideaId: idea.id,
-          initialIdea: idea,
-          ideasService: ideasService,
+        builder: (context) => MultiProvider(
+          providers: [
+            Provider.value(value: ideasService),
+            Provider.value(value: user),
+          ],
+          child: WritePage(
+            ideaId: idea.id,
+            initialIdea: idea,
+          ),
         ),
       ),
     );

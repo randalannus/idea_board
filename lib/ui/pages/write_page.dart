@@ -4,17 +4,18 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:idea_board/model/idea.dart';
+import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/ideas_service.dart';
+import 'package:idea_board/ui/pages/recording_page.dart';
+import 'package:provider/provider.dart';
 
 class WritePage extends StatefulWidget {
   final String ideaId;
   final Idea initialIdea;
-  final IdeasService ideasService;
 
   const WritePage({
     required this.ideaId,
     required this.initialIdea,
-    required this.ideasService,
     super.key,
   });
 
@@ -30,7 +31,8 @@ class _WritePageState extends State<WritePage> {
   @override
   void initState() {
     _controller = createQuillController(widget.initialIdea);
-    _saver = Saver(widget.ideasService, widget.ideaId, _controller);
+    final ideasService = Provider.of<IdeasService>(context, listen: false);
+    _saver = Saver(ideasService, widget.ideaId, _controller);
     _changeSub = _controller.document.changes.listen((_) => _saver.notify());
 
     super.initState();
@@ -52,6 +54,10 @@ class _WritePageState extends State<WritePage> {
           backgroundColor: Theme.of(context).cardColor,
           iconTheme: Theme.of(context).iconTheme,
           actions: [
+            IconButton(
+              onPressed: () => _onRecordingPressed(context),
+              icon: const Icon(Icons.mic),
+            ),
             IconButton(
               onPressed: () => _onArchivePressed(context),
               icon: const Icon(Icons.delete),
@@ -170,7 +176,28 @@ class _WritePageState extends State<WritePage> {
 
   Future<void> _onArchivePressed(BuildContext context) async {
     Navigator.of(context).pop();
-    await widget.ideasService.archiveIdea(widget.ideaId);
+    final ideasService = Provider.of<IdeasService>(context, listen: false);
+    await ideasService.archiveIdea(widget.ideaId);
+  }
+
+  Future<void> _onRecordingPressed(BuildContext context) async {
+    final ideasService = Provider.of<IdeasService>(context, listen: false);
+    final user = Provider.of<User>(context, listen: false);
+    final didSave = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MultiProvider(
+          providers: [
+            Provider.value(value: ideasService),
+            Provider.value(value: user),
+          ],
+          child: RecordingPage(ideaId: widget.ideaId),
+        ),
+      ),
+    );
+    if (!mounted || !didSave) return;
+    // ignore: use_build_context_synchronously
+    Navigator.pop(context);
   }
 }
 

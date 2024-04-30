@@ -160,7 +160,7 @@ class SaveButton extends StatelessWidget {
           //shape: CircleBorder(Bord),
         ),
         onPressed: () async {
-          Navigator.pop(context);
+          Navigator.pop(context, true);
           if (recorderService.status != RecordingStatus.stopped) {
             await recorderService.stopRecording();
           }
@@ -190,7 +190,7 @@ class _CancelButtonState extends State<CancelButton> {
           final userAccepted = await _confirmDiscard(context);
           if (!userAccepted || !mounted) return;
           // ignore: use_build_context_synchronously
-          Navigator.pop(context);
+          Navigator.pop(context, false);
         },
         child: IconButton.filled(
           icon: const Icon(
@@ -216,7 +216,7 @@ class _CancelButtonState extends State<CancelButton> {
     }
     if (!mounted) return;
     // ignore: use_build_context_synchronously
-    Navigator.pop(context);
+    Navigator.pop(context, false);
   }
 
   Future<bool> _confirmDiscard(BuildContext context) async {
