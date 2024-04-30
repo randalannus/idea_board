@@ -42,6 +42,7 @@ async function transcribeAudio(bucketName, fileName) {
   const transcription = await openai.audio.transcriptions.create({
       file: openaiFile,
       model: "whisper-1",
+      language: "en",
   });
 
   return transcription.text;
