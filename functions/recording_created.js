@@ -42,6 +42,7 @@ async function transcribeAudio(bucketName, fileName) {
   const transcription = await openai.audio.transcriptions.create({
       file: openaiFile,
       model: "whisper-1",
+      language: "en",
   });
 
   return transcription.text;
@@ -52,7 +53,27 @@ async function appendTextToIdea(text, userId, ideaId) {
   const snapshot = await ref.get();
   const idea = snapshot.data();
 
+  console.log(JSON.stringify(text));
+
+  if (idea.richText == null) {
+    console.log("here");
+    await ref.update({
+      text: text + "\n",
+    });
+    return;
+  }
+
+  var jsonArray = JSON.parse(idea.richText);
+  var beginning = "\n";
+  if (jsonArray.length > 0 
+    && "insert" in jsonArray[jsonArray.length - 1] 
+    && jsonArray[jsonArray.length - 1].insert.endsWith("\n\n")
+  ) {
+    beginning = "";
+  }
+  jsonArray.push({insert: beginning + text + "\n"});
   await ref.update({
-    text: idea.text == null || idea.text == "" ? text : idea.text + "\n\n" + text,
+    richText: JSON.stringify(jsonArray),
   });
+  console.log(JSON.stringify(jsonArray));
 }

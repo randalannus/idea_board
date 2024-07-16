@@ -1,6 +1,7 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:idea_board/model/user.dart';
 import 'package:idea_board/service/ideas_service.dart';
 import 'package:idea_board/ui/pages/write_page.dart';
 import 'package:idea_board/model/idea.dart';
@@ -19,6 +20,7 @@ class IdeaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ideasService = Provider.of<IdeasService>(context, listen: false);
+    final user = Provider.of<User>(context, listen: false);
     return OpenContainer(
       closedShape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -26,7 +28,13 @@ class IdeaCard extends StatelessWidget {
       closedElevation: 0,
       closedColor: Theme.of(context).cardColor,
       closedBuilder: closedBuilder,
-      openBuilder: (context, _) => openBuilder(context, ideasService),
+      openBuilder: (context, _) => MultiProvider(
+        providers: [
+          Provider.value(value: ideasService),
+          Provider.value(value: user),
+        ],
+        child: openBuilder(context),
+      ),
     );
   }
 
@@ -70,11 +78,10 @@ class IdeaCard extends StatelessWidget {
     );
   }
 
-  Widget openBuilder(BuildContext context, IdeasService ideasService) {
+  Widget openBuilder(BuildContext context) {
     return WritePage(
       ideaId: idea.id,
       initialIdea: idea,
-      ideasService: ideasService,
     );
   }
 }

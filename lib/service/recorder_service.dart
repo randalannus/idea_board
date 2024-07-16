@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -20,10 +21,16 @@ class RecorderService with ChangeNotifier {
 
   RecordingStatus get status => _status;
 
+  final _micDecibelsController = StreamController<double>.broadcast();
+  StreamSubscription? _recorderDecibelsListener;
+  Stream<double> get micDecibelsStream => _micDecibelsController.stream;
+
   @override
   void dispose() {
     _recorder.closeRecorder();
     super.dispose();
+    _recorderDecibelsListener?.cancel();
+    _micDecibelsController.close();
   }
 
   Future<void> startRecording() async {
@@ -45,6 +52,11 @@ class RecorderService with ChangeNotifier {
       codec: Codec.aacMP4,
     );
     _setStatus(RecordingStatus.recording);
+
+    _recorder.setSubscriptionDuration(const Duration(milliseconds: 20));
+    _recorderDecibelsListener = _recorder.onProgress!.listen((event) {
+      _micDecibelsController.add(event.decibels ?? 0);
+    });
   }
 
   Future<void> pauseRecording() async {
@@ -52,6 +64,7 @@ class RecorderService with ChangeNotifier {
       throw NotRecordingError();
     }
     await _recorder.pauseRecorder();
+    _micDecibelsController.add(0);
     _setStatus(RecordingStatus.paused);
   }
 
@@ -70,8 +83,10 @@ class RecorderService with ChangeNotifier {
       throw NotRecordingError();
     }
     await _recorder.stopRecorder();
+    _micDecibelsController.add(0);
     _setStatus(RecordingStatus.stopped);
     await _recorder.closeRecorder();
+    await _recorderDecibelsListener?.cancel();
   }
 
   Future<void> uploadRecording(String ideaId) async {
