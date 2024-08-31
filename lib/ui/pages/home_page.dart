@@ -153,7 +153,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _openRecordingPage(BuildContext context) async {
     final ideasService = Provider.of<IdeasService>(context, listen: false);
     final user = Provider.of<User>(context, listen: false);
-    final idea = await ideasService.newIdea(isProcessingAudio: true);
+    final idea = await ideasService.newIdea();
     if (!mounted) return;
     Navigator.push(
       // ignore: use_build_context_synchronously

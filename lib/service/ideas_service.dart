@@ -51,6 +51,11 @@ class IdeasService {
     await _ideasColRef(user.uid).doc(ideaId).update(map);
   }
 
+  Future<void> setIsProcessingAudio(String ideaId, bool isProcessing) async {
+    var map = {Idea.fIsProcessingAudio: isProcessing};
+    await _ideasColRef(user.uid).doc(ideaId).update(map);
+  }
+
   /// An event is sent whenever the list of all ideas for a user changes.
   Stream<List<Idea>> ideasListStream() {
     return _ideasColRef(user.uid)

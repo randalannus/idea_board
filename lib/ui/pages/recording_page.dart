@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:idea_board/model/user.dart';
+import 'package:idea_board/service/ideas_service.dart';
 import 'package:idea_board/service/recorder_service.dart';
 import 'package:idea_board/ui/widgets/confimation_dialog.dart';
 import 'package:provider/provider.dart';
@@ -147,27 +148,29 @@ class SaveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<RecorderService>(builder: (context, recorderService, _) {
-      final theme = Theme.of(context);
-      return IconButton.filled(
-        icon: const Icon(
-          Icons.done,
-          size: 50,
-        ),
-        style: IconButton.styleFrom(
-          backgroundColor: theme.colorScheme.primary,
-          foregroundColor: theme.colorScheme.onPrimary,
-          //shape: CircleBorder(Bord),
-        ),
-        onPressed: () async {
-          Navigator.pop(context, true);
-          if (recorderService.status != RecordingStatus.stopped) {
-            await recorderService.stopRecording();
-          }
+    final theme = Theme.of(context);
+    final recorderService =
+        Provider.of<RecorderService>(context, listen: false);
+    final ideasService = Provider.of<IdeasService>(context, listen: false);
+    return IconButton.filled(
+      icon: const Icon(
+        Icons.done,
+        size: 50,
+      ),
+      style: IconButton.styleFrom(
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+        //shape: CircleBorder(Bord),
+      ),
+      onPressed: () async {
+        ideasService.setIsProcessingAudio(ideaId, true);
+        Navigator.pop(context, true);
+        if (recorderService.status != RecordingStatus.stopped) {
+          await recorderService.stopRecording();
           await recorderService.uploadRecording(ideaId);
-        },
-      );
-    });
+        }
+      },
+    );
   }
 }
 
