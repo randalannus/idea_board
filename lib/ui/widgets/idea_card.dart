@@ -21,12 +21,13 @@ class IdeaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ideasService = Provider.of<IdeasService>(context, listen: false);
     final user = Provider.of<User>(context, listen: false);
+    final theme = Theme.of(context);
     return OpenContainer(
       closedShape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
       closedElevation: 0,
-      closedColor: Theme.of(context).cardColor,
+      tappable: !idea.isProcessingAudio,
       closedBuilder: closedBuilder,
       openBuilder: (context, _) => MultiProvider(
         providers: [
@@ -39,10 +40,12 @@ class IdeaCard extends StatelessWidget {
   }
 
   Widget closedBuilder(BuildContext context, VoidCallback openContainer) {
+    final theme = Theme.of(context);
     return InkWell(
-      onTap: openContainer,
+      onTap: !idea.isProcessingAudio ? openContainer : null,
       child: Card.outlined(
         margin: const EdgeInsets.all(0),
+        color: idea.isProcessingAudio ? theme.highlightColor : null,
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: ConstrainedBox(

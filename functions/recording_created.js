@@ -59,6 +59,7 @@ async function appendTextToIdea(text, userId, ideaId) {
     console.log("here");
     await ref.update({
       text: text + "\n",
+      isProcessingAudio: false,
     });
     return;
   }
@@ -74,6 +75,6 @@ async function appendTextToIdea(text, userId, ideaId) {
   jsonArray.push({insert: beginning + text + "\n"});
   await ref.update({
     richText: JSON.stringify(jsonArray),
+    isProcessingAudio: false,
   });
-  console.log(JSON.stringify(jsonArray));
 }
